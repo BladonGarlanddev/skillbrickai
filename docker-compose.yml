@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: collective-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-collective}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-collective}
+      POSTGRES_DB: ${POSTGRES_DB:-collective}
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-collective} -d ${POSTGRES_DB:-collective}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
