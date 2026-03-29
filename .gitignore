@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+Thumbs.db
+
+# Prisma
+apps/api/src/prisma/migrations/
+
+# Vite
+apps/web/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

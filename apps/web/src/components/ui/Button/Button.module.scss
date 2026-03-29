@@ -1,0 +1,85 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: $radius;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $ring;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.default {
+  background-color: $primary;
+  color: $primary-foreground;
+
+  &:hover {
+    background-color: rgba($primary, 0.9);
+  }
+}
+
+.outline {
+  border-color: rgba(0, 0, 0, 0.1);
+  background-color: transparent;
+  color: $foreground;
+
+  &:hover {
+    background-color: rgba($foreground, 0.02);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+}
+
+.ghost {
+  background-color: transparent;
+  color: $foreground;
+
+  &:hover {
+    background-color: rgba($foreground, 0.05);
+  }
+}
+
+.secondary {
+  background-color: $secondary;
+  color: $secondary-foreground;
+
+  &:hover {
+    background-color: #ebebeb;
+  }
+}
+
+.size-sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.size-md {
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+
+.size-lg {
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+}
+
+.size-icon {
+  height: 2.5rem;
+  width: 2.5rem;
+  padding: 0;
+}

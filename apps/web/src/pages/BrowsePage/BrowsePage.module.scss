@@ -1,0 +1,192 @@
+.page {
+  @include container;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.searchSection {
+  max-width: 42rem;
+  margin: 0 auto 3rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: rgba($foreground, 0.6);
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.625;
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgba($foreground, 0.4);
+}
+
+.searchInput {
+  padding-left: 3rem;
+  height: 3rem;
+  font-size: 1rem;
+  border-color: rgba(0, 0, 0, 0.1);
+
+  &:focus {
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.filters {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.filterTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sortLabel {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.domainFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.resultsCount {
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.skillsList {
+  display: grid;
+  gap: 1rem;
+}
+
+.skillCard {
+  display: block;
+  padding: 1.5rem;
+  border-radius: $radius;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  @include card-hover;
+
+  &:hover .skillTitle {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.skillCardInner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.skillAvatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.skillContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.skillHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.skillHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.skillTitle {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.skillAuthor {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.skillDescription {
+  color: rgba($foreground, 0.7);
+  line-height: 1.625;
+  margin-bottom: 1rem;
+}
+
+.skillFooter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.skillTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skillUses {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.4);
+  margin-left: auto;
+}
+
+.empty {
+  text-align: center;
+  padding: 5rem 0;
+}
+
+.emptyTitle {
+  color: rgba($foreground, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.emptySubtitle {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.4);
+}

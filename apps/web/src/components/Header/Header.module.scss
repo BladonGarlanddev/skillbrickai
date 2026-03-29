@@ -1,0 +1,68 @@
+.header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logoCircle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: rgba($foreground, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: rgba($foreground, 0.2);
+}
+
+.logoText {
+  font-weight: 500;
+}
+
+.nav {
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+
+  @include respond-to(md) {
+    display: flex;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+
+  @include respond-to(md) {
+    margin-left: 0;
+  }
+}

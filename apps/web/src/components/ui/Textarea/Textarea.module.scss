@@ -1,0 +1,29 @@
+.textarea {
+  display: flex;
+  width: 100%;
+  min-height: 5rem;
+  padding: 0.75rem;
+  border-radius: $radius;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: $background;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: $foreground;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: $muted-foreground;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

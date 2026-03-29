@@ -1,0 +1,302 @@
+.page {
+  padding-bottom: 6rem;
+}
+
+// Hero
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+.heroContent {
+  position: relative;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 8rem 1.5rem;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba($foreground, 0.05);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  line-height: 1.1;
+
+  @include respond-to(md) {
+    font-size: 3.75rem;
+  }
+}
+
+.heroDescription {
+  font-size: 1.25rem;
+  color: rgba($foreground, 0.6);
+  max-width: 42rem;
+  margin: 0 auto 2.5rem;
+  line-height: 1.625;
+}
+
+.heroCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// Featured
+.featured {
+  @include container;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.featuredGrid {
+  display: grid;
+  gap: 1.5rem;
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.featuredCard {
+  display: block;
+  padding: 1.5rem;
+  border-radius: $radius;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  @include card-hover;
+
+  &:hover .cardTitle {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cardHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.cardAuthor {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.cardDescription {
+  color: rgba($foreground, 0.7);
+  line-height: 1.625;
+  margin-bottom: 1rem;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+// Trending
+.trending {
+  @include container;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.trendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.trendingItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: $radius;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba($foreground, 0.02);
+  }
+
+  &:hover .trendingTitle {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.trendingNumber {
+  color: rgba($foreground, 0.3);
+  font-weight: 500;
+  width: 2rem;
+  text-align: center;
+}
+
+.trendingContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.trendingTitle {
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.trendingDesc {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+  @include truncate;
+}
+
+.trendingUses {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.4);
+}
+
+// Domains
+.domains {
+  @include container;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.domainGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.domainCard {
+  padding: 1rem;
+  border-radius: $radius;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba($foreground, 0.02);
+  }
+}
+
+.domainName {
+  font-weight: 500;
+}
+
+.domainCount {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+  margin-top: 0.25rem;
+}
+
+// How It Works
+.howItWorks {
+  @include container-narrow;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+.howItWorksTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.stepsGrid {
+  display: grid;
+  gap: 2rem;
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.step {
+  text-align: center;
+}
+
+.stepNumber {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: rgba($foreground, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+
+  span {
+    font-weight: 500;
+  }
+}
+
+.stepTitle {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.stepDesc {
+  color: rgba($foreground, 0.6);
+  font-size: 0.875rem;
+  line-height: 1.625;
+}

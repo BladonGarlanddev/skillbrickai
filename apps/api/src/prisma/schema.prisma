@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  username       String    @unique
+  passwordHash   String?
+  avatarUrl      String?
+  bio            String?
+  communityScore Int       @default(0)
+  tokenBalance   Int       @default(0)
+  isEarlyAdopter Boolean   @default(false)
+  githubId       String?   @unique
+  googleId       String?   @unique
+  createdAt      DateTime  @default(now())
+
+  skills         Skill[]
+  badges         Badge[]
+  collections    Collection[]
+  upvotes        Upvote[]
+  tokenLedger    TokenTransaction[]
+  posts          Post[]
+  requests       SkillRequest[]
+  showcases      Showcase[]
+  suggestions    ImprovementSuggestion[]
+}
+
+model Skill {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  content      String   @db.Text
+  domain       String
+  authorId     String
+  installCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  author       User     @relation(fields: [authorId], references: [id])
+  tags         SkillTag[]
+  testedOn     SkillTestedOn[]
+  upvotes      Upvote[]
+  collections  CollectionSkill[]
+  showcases    ShowcaseSkill[]
+  suggestions  ImprovementSuggestion[]
+}
+
+model SkillTag {
+  skillId String
+  tag     String
+
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([skillId, tag])
+}
+
+model SkillTestedOn {
+  skillId String
+  model   String
+
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([skillId, model])
+}
+
+model Badge {
+  id        String    @id @default(cuid())
+  userId    String
+  type      BadgeType
+  earnedAt  DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type])
+}
+
+enum BadgeType {
+  EARLY_ADOPTER
+  CONTRIBUTOR
+  ACTIVE_COMMUNITY_MEMBER
+  MR_POPULAR
+  CURATOR
+  HELPER
+  VERIFIED_EXPERT
+}
+
+model TokenTransaction {
+  id        String            @id @default(cuid())
+  userId    String
+  amount    Int
+  type      TokenTransactionType
+  skillId   String?
+  createdAt DateTime          @default(now())
+
+  user      User              @relation(fields: [userId], references: [id])
+}
+
+enum TokenTransactionType {
+  ACCOUNT_CREATED
+  SKILL_POSTED
+  SKILL_INSTALLED
+  ADMIN_GRANT
+}
+
+model Upvote {
+  id         String       @id @default(cuid())
+  userId     String
+  targetType UpvoteTarget
+  targetId   String
+  createdAt  DateTime     @default(now())
+
+  user       User         @relation(fields: [userId], references: [id])
+  skill      Skill?       @relation(fields: [targetId], references: [id])
+
+  @@unique([userId, targetType, targetId])
+}
+
+enum UpvoteTarget {
+  SKILL
+  POST
+  REPLY
+  SHOWCASE
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  authorId    String
+  createdAt   DateTime @default(now())
+
+  author      User     @relation(fields: [authorId], references: [id])
+  skills      CollectionSkill[]
+}
+
+model CollectionSkill {
+  collectionId String
+  skillId      String
+  addedAt      DateTime @default(now())
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  skill        Skill      @relation(fields: [skillId], references: [id])
+
+  @@id([collectionId, skillId])
+}
+
+model Post {
+  id        String       @id @default(cuid())
+  title     String?
+  body      String       @db.Text
+  authorId  String
+  category  PostCategory
+  parentId  String?
+  createdAt DateTime     @default(now())
+
+  author    User         @relation(fields: [authorId], references: [id])
+  parent    Post?        @relation("replies", fields: [parentId], references: [id])
+  replies   Post[]       @relation("replies")
+}
+
+enum PostCategory {
+  GENERAL
+  HELP
+  IDEAS
+  SHOW_AND_TELL
+}
+
+model SkillRequest {
+  id          String              @id @default(cuid())
+  title       String
+  description String              @db.Text
+  authorId    String
+  status      SkillRequestStatus  @default(OPEN)
+  createdAt   DateTime            @default(now())
+
+  author      User                @relation(fields: [authorId], references: [id])
+  replies     SkillRequestReply[]
+}
+
+enum SkillRequestStatus {
+  OPEN
+  FULFILLED
+}
+
+model SkillRequestReply {
+  id         String       @id @default(cuid())
+  requestId  String
+  authorId   String
+  body       String       @db.Text
+  skillId    String?
+  createdAt  DateTime     @default(now())
+
+  request    SkillRequest @relation(fields: [requestId], references: [id])
+}
+
+model Showcase {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  authorId    String
+  createdAt   DateTime @default(now())
+
+  author      User     @relation(fields: [authorId], references: [id])
+  skills      ShowcaseSkill[]
+}
+
+model ShowcaseSkill {
+  showcaseId String
+  skillId    String
+
+  showcase   Showcase @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  skill      Skill    @relation(fields: [skillId], references: [id])
+
+  @@id([showcaseId, skillId])
+}
+
+model ImprovementSuggestion {
+  id              String           @id @default(cuid())
+  skillId         String
+  authorId        String
+  proposedContent String           @db.Text
+  note            String?
+  status          SuggestionStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+
+  skill           Skill            @relation(fields: [skillId], references: [id])
+  author          User             @relation(fields: [authorId], references: [id])
+}
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

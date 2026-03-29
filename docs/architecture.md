@@ -451,7 +451,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Frontend runs on `http://localhost:5173`
+Frontend runs on `http://localhost:5176`
 API runs on `http://localhost:3000`
 Swagger docs at `http://localhost:3000/api/docs`
 

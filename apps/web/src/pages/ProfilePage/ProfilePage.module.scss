@@ -1,0 +1,200 @@
+.page {
+  @include container-narrow;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.backButton {
+  margin-bottom: 2rem;
+  margin-left: -0.5rem;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profileAvatar {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.profileName {
+  font-size: 1.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.profileBio {
+  color: rgba($foreground, 0.7);
+  line-height: 1.625;
+  margin-bottom: 1rem;
+  max-width: 42rem;
+}
+
+.profileScore {
+  margin-bottom: 1rem;
+}
+
+.profileBadges {
+  margin-bottom: 1rem;
+}
+
+.profileTokens {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.tokenCount {
+  font-weight: 500;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem 0;
+  color: rgba($foreground, 0.5);
+}
+
+.skillsList {
+  display: grid;
+  gap: 1rem;
+}
+
+.skillCard {
+  display: block;
+  padding: 1.5rem;
+  border-radius: $radius;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  @include card-hover;
+
+  &:hover .skillCardTitle {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.skillCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.skillCardTitle {
+  font-weight: 500;
+  flex: 1;
+  transition: color 0.15s ease;
+}
+
+.skillCardDesc {
+  color: rgba($foreground, 0.7);
+  line-height: 1.625;
+  margin-bottom: 1rem;
+}
+
+.skillCardFooter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.skillCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skillCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.collectionsList {
+  display: grid;
+  gap: 1rem;
+}
+
+.collectionCard {
+  display: block;
+  padding: 1.5rem;
+  border-radius: $radius;
+  background-color: white;
+  text-decoration: none;
+  color: inherit;
+  @include card-hover;
+
+  &:hover .collectionTitle {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.collectionTitle {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  transition: color 0.15s ease;
+}
+
+.collectionDesc {
+  color: rgba($foreground, 0.7);
+  line-height: 1.625;
+  margin-bottom: 0.75rem;
+}
+
+.collectionMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activityItem {
+  padding: 1.5rem;
+  border-radius: $radius;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: rgba($foreground, 0.01);
+}
+
+.activityDate {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+  margin-bottom: 0.25rem;
+}
+
+.activityText {
+  color: rgba($foreground, 0.7);
+}
+
+.activityLink {
+  font-weight: 500;
+  color: $foreground;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: rgba($foreground, 0.7);
+  }
+}

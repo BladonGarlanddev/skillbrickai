@@ -10,9 +10,20 @@
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d",
     "db:migrate": "pnpm --filter @collective/api prisma:migrate",
-    "db:studio": "pnpm --filter @collective/api prisma:studio"
+    "db:studio": "pnpm --filter @collective/api prisma:studio",
+    "db:seed": "pnpm --filter @collective/api prisma:seed"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "@nestjs/core"
+    ]
   }
 }
