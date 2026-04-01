@@ -16,7 +16,7 @@ export function Header() {
           <div className={styles.logoCircle}>
             <div className={styles.logoDot} />
           </div>
-          <span className={styles.logoText}>Collective</span>
+          <span className={styles.logoText}>SkillBrick AI</span>
         </Link>
 
         <nav className={styles.nav}>

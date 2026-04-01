@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Copy, Check, Download, ArrowLeft } from 'lucide-react';
+import { Copy, Download, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Upvote } from '@/components/Upvote/Upvote';
+import { SuccessCheckmark } from '@/components/SuccessCheckmark/SuccessCheckmark';
 import { useSkill } from '@/lib/hooks';
 import styles from './SkillDetailPage.module.scss';
 
@@ -33,7 +34,7 @@ export default function SkillDetailPage() {
     try {
       await navigator.clipboard.writeText(skill.content);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => navigate('/browse'), 1400);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -53,6 +54,8 @@ export default function SkillDetailPage() {
 
   return (
     <div className={styles.page}>
+      <SuccessCheckmark visible={copied} label="Copied!" />
+
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerInner}>
@@ -96,18 +99,9 @@ export default function SkillDetailPage() {
           </div>
 
           <div className={styles.actions}>
-            <Button onClick={handleCopy}>
-              {copied ? (
-                <>
-                  <Check style={{ width: '1rem', height: '1rem' }} />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy style={{ width: '1rem', height: '1rem' }} />
-                  Copy Prompt
-                </>
-              )}
+            <Button onClick={handleCopy} disabled={copied}>
+              <Copy style={{ width: '1rem', height: '1rem' }} />
+              Copy Prompt
             </Button>
             <Button onClick={handleDownload} variant="outline">
               <Download style={{ width: '1rem', height: '1rem' }} />

@@ -1,14 +1,14 @@
-# Collective — Design Brief
+# SkillBrick AI — Design Brief
 
-This document is the seeding brief provided to Figma for the initial design of Collective.
+This document is the seeding brief provided to Figma for the initial design of SkillBrick AI.
 
 ---
 
 ## Concept
 
-Collective is a community library for AI skills — downloadable prompts that make AI agents smarter in specific domains. Think of it as a living library where humans deposit accumulated knowledge so that any AI, anywhere, can draw from it.
+SkillBrick AI is a community library for AI skills — downloadable prompts that make AI agents smarter in specific domains. Think of it as a living library where humans deposit accumulated knowledge so that any AI, anywhere, can draw from it.
 
-The name and concept are rooted in a simple observation: knowledge transfer has always been humanity's greatest challenge. We told stories, then wrote them down, then printed them at scale, then put them on the internet. AI is the next bridge — and Collective is the place where individual knowledge becomes collective knowledge.
+The name and concept are rooted in a simple observation: knowledge transfer has always been humanity's greatest challenge. We told stories, then wrote them down, then printed them at scale, then put them on the internet. AI is the next bridge — and SkillBrick AI is the place where individual knowledge becomes collective knowledge.
 
 ---
 
@@ -29,7 +29,7 @@ The hero and brand identity should incorporate the visual language of connected 
 
 **Nodes** represent knowledge created through human and AI collaboration — a person working with an AI to distill expertise into a skill.
 
-**Edges** represent the transmission of that knowledge between AI systems. Collective *is* the graph — it's the connective tissue that makes isolated knowledge transferable.
+**Edges** represent the transmission of that knowledge between AI systems. SkillBrick AI *is* the graph — it's the connective tissue that makes isolated knowledge transferable.
 
 The motif should feel like something between a neural network and a library's card catalog — organic but structured, human but precise.
 

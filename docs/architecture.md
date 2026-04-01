@@ -2,10 +2,10 @@
 
 ## Overview
 
-Collective is a pnpm monorepo with two applications and one shared package.
+SkillBrick AI is a pnpm monorepo with two applications and one shared package.
 
 ```
-collective/
+skillbrickai/
 ├── apps/
 │   ├── web/                  # React frontend
 │   └── api/                  # NestJS backend
@@ -32,7 +32,7 @@ collective/
 | HTTP client | Axios |
 | State | Zustand (global), TanStack Query (server state) |
 | Forms | React Hook Form + Zod |
-| Package name | `@collective/web` |
+| Package name | `@skillbrickai/web` |
 
 **Directory structure:**
 ```
@@ -53,7 +53,7 @@ apps/web/
 │   │   ├── _reset.scss
 │   │   ├── _typography.scss
 │   │   └── index.scss        # Global entry point
-│   ├── types/                # Frontend-local types (re-exports from @collective/shared)
+│   ├── types/                # Frontend-local types (re-exports from @skillbrickai/shared)
 │   ├── routes.ts
 │   └── main.tsx
 ├── vite.config.ts
@@ -90,7 +90,7 @@ SCSS modules for component-scoped styles. Global SCSS for base, typography, and 
 | Auth | Passport.js + JWT + OAuth (GitHub, Google) |
 | Validation | class-validator + class-transformer |
 | API docs | @nestjs/swagger (OpenAPI) |
-| Package name | `@collective/api` |
+| Package name | `@skillbrickai/api` |
 
 **Directory structure:**
 ```
@@ -466,7 +466,7 @@ Hybrid model: static frontend hosted on Cloudflare, backend self-hosted locally 
 The Vite-built React SPA is deployed to **Cloudflare Pages**.
 
 - Connect the repo to Cloudflare Pages
-- Build command: `pnpm --filter @collective/web build`
+- Build command: `pnpm --filter @skillbrickai/web build`
 - Output directory: `apps/web/dist`
 - Environment variable: `VITE_API_URL` → the tunnel subdomain (e.g. `https://api.yourdomain.com`)
 

@@ -29,7 +29,7 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Collective API')
+    .setTitle('SkillBrick AI API')
     .setDescription('Community skill marketplace for agent flows')
     .setVersion('0.1.0')
     .addBearerAuth()
@@ -39,7 +39,7 @@ async function bootstrap() {
 
   const port = process.env.API_PORT || 3000;
   await app.listen(port);
-  console.log(`Collective API running on http://localhost:${port}`);
+  console.log(`SkillBrick AI API running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 

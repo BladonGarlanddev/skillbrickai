@@ -1,0 +1,75 @@
+.typeTabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: rgba($foreground, 0.03);
+  border-radius: $radius;
+  margin-bottom: 1rem;
+}
+
+.typeTab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 450;
+  border: none;
+  background: none;
+  border-radius: calc(#{$radius} - 2px);
+  color: rgba($foreground, 0.5);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: rgba($foreground, 0.8);
+  }
+}
+
+.typeTabActive {
+  background-color: $background;
+  color: $foreground;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.optional {
+  font-weight: 400;
+  color: rgba($foreground, 0.4);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: rgba($foreground, 0.4);
+}
+
+.categoryPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.categoryBadge {
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge/Badge';
 import { CommunityScore } from '@/components/CommunityScore/CommunityScore';
 import { BadgeDisplay } from '@/components/BadgeDisplay/BadgeDisplay';
 import { Upvote } from '@/components/Upvote/Upvote';
+import { NewPostDialog } from '@/components/NewPostDialog/NewPostDialog';
 import { usePosts, useRequests, useShowcases, useSkills } from '@/lib/hooks';
 import type { BadgeType } from '@/data/community-data';
 import styles from './CommunityPage.module.scss';
@@ -16,6 +17,7 @@ type CategoryFilter = 'all' | 'general' | 'help' | 'ideas' | 'show-tell';
 export default function CommunityPage() {
   const [postType, setPostType] = useState<PostType>('all');
   const [category, setCategory] = useState<CategoryFilter>('all');
+  const [newPostOpen, setNewPostOpen] = useState(false);
 
   const { data: discussionPosts } = usePosts();
   const { data: skillRequests } = useRequests();
@@ -52,7 +54,7 @@ export default function CommunityPage() {
             Discuss skills, request new ones, and share what you've built
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setNewPostOpen(true)}>
           <Plus style={{ width: '1rem', height: '1rem' }} />
           New Post
         </Button>
@@ -167,6 +169,8 @@ export default function CommunityPage() {
           <div className={styles.empty}>No posts found</div>
         )}
       </div>
+
+      <NewPostDialog open={newPostOpen} onOpenChange={setNewPostOpen} />
     </div>
   );
 }

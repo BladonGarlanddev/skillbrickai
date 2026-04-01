@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { Textarea } from '@/components/ui/Textarea/Textarea';
 import { Badge } from '@/components/ui/Badge/Badge';
+import { SuccessCheckmark } from '@/components/SuccessCheckmark/SuccessCheckmark';
 import { useDomains } from '@/lib/hooks';
 import api from '@/lib/api';
 import styles from './SubmitPage.module.scss';
@@ -13,6 +14,7 @@ export default function SubmitPage() {
   const navigate = useNavigate();
   const { data: domains } = useDomains();
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -36,7 +38,8 @@ export default function SubmitPage() {
         tags: tags.length > 0 ? tags : undefined,
         testedOn: testedOn.length > 0 ? testedOn : undefined,
       });
-      navigate('/browse');
+      setShowSuccess(true);
+      setTimeout(() => navigate('/browse'), 1400);
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to submit skill. Are you logged in?');
     } finally {
@@ -55,6 +58,8 @@ export default function SubmitPage() {
 
   return (
     <div className={styles.page}>
+      <SuccessCheckmark visible={showSuccess} label="Skill Submitted!" />
+
       <Button
         variant="ghost"
         size="sm"
@@ -72,7 +77,7 @@ export default function SubmitPage() {
         <div>
           <h1 className={styles.title}>Submit a Skill</h1>
           <p className={styles.subtitle}>
-            Share your knowledge with the collective. Write a prompt that teaches AI to excel in a specific domain.
+            Share your knowledge with SkillBrick AI. Write a prompt that teaches AI to excel in a specific domain.
           </p>
         </div>
       </div>

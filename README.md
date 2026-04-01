@@ -1,10 +1,10 @@
-# Collective
+# SkillBrick AI
 
 A community library for AI skills. Browse, copy, and stack prompt-based skills that make AI agents smarter in specific domains.
 
-## What is Collective?
+## What is SkillBrick AI?
 
-Collective is a web platform where people publish **skills** — distilled, domain-specific knowledge encoded as prompts — that anyone can drop into their own AI agent environment to improve its behavior.
+SkillBrick AI is a web platform where people publish **skills** — distilled, domain-specific knowledge encoded as prompts — that anyone can drop into their own AI agent environment to improve its behavior.
 
 A skill is not code or an API integration. It is accumulated human knowledge about how an AI should behave to be successful in a given domain. For example, a _Frontend Design_ skill guides an agent toward better visual hierarchy, spacing, and component decisions. Without it, most agents produce mediocre UI. With it, they don't.
 
@@ -18,15 +18,15 @@ Skills are:
 
 Knowledge transfer has always been humanity's defining challenge. We told stories. We wrote them down. We printed them at scale. We put them on the internet. AI is the next bridge.
 
-Collective is not an evolution of that chain — it is a bridge within it. Individual AI sessions accumulate knowledge through human collaboration. That knowledge evaporates when the session ends. Collective is the place where it doesn't.
+SkillBrick AI is not an evolution of that chain — it is a bridge within it. Individual AI sessions accumulate knowledge through human collaboration. That knowledge evaporates when the session ends. SkillBrick AI is the place where it doesn't.
 
 Think of it as a **library for AI** — a living, community-maintained repository where human and AI collaboration deposits knowledge, and where any AI can draw from it.
 
-The brand motif reflects this: **nodes** represent knowledge created through human and AI collaboration; **edges** represent the transmission of that knowledge between AI systems. Collective is the graph.
+The brand motif reflects this: **nodes** represent knowledge created through human and AI collaboration; **edges** represent the transmission of that knowledge between AI systems. SkillBrick AI is the graph.
 
 ## Audience
 
-Collective is intentionally approachable. The target audience spans:
+SkillBrick AI is intentionally approachable. The target audience spans:
 - Developers building agent workflows who want proven behavioral building blocks
 - Non-technical users who have picked up AI tools and want to improve their agents without writing code
 

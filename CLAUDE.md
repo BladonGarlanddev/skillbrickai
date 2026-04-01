@@ -1,4 +1,4 @@
-# Collective - Claude Code Guidelines
+# SkillBrick AI - Claude Code Guidelines
 
 ## Alignment Check
 

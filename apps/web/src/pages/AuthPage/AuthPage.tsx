@@ -92,18 +92,18 @@ export default function AuthPage() {
               </g>
             </svg>
           </div>
-          <span className={styles.logoText}>Collective</span>
+          <span className={styles.logoText}>SkillBrick AI</span>
         </Link>
 
         {/* Header */}
         <div className={styles.headerText}>
           <h1 className={styles.title}>
-            {mode === 'signup' ? 'Join Collective' : 'Welcome back'}
+            {mode === 'signup' ? 'Join SkillBrick AI' : 'Welcome back'}
           </h1>
           <p className={styles.subtitle}>
             {mode === 'signup'
               ? 'Start building and sharing AI skills with the community'
-              : 'Continue your journey in the knowledge collective'}
+              : 'Continue your journey with SkillBrick AI'}
           </p>
         </div>
 

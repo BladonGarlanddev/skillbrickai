@@ -1,17 +1,17 @@
 {
-  "name": "collective",
+  "name": "skillbrickai",
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel -r dev",
-    "dev:web": "pnpm --filter @collective/web dev",
-    "dev:api": "pnpm --filter @collective/api dev",
+    "dev:web": "pnpm --filter @skillbrickai/web dev",
+    "dev:api": "pnpm --filter @skillbrickai/api dev",
     "build": "pnpm -r build",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d",
-    "db:migrate": "pnpm --filter @collective/api prisma:migrate",
-    "db:studio": "pnpm --filter @collective/api prisma:studio",
-    "db:seed": "pnpm --filter @collective/api prisma:seed"
+    "db:migrate": "pnpm --filter @skillbrickai/api prisma:migrate",
+    "db:studio": "pnpm --filter @skillbrickai/api prisma:studio",
+    "db:seed": "pnpm --filter @skillbrickai/api prisma:seed"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

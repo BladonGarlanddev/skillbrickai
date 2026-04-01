@@ -1,6 +1,6 @@
 # Community
 
-Community is a first-class product goal for Collective — not a tab bolted on after the fact. The platform should feel alive: active discussions, visible demand, people sharing what they built. This document covers the planned community features and their intent.
+Community is a first-class product goal for SkillBrick AI — not a tab bolted on after the fact. The platform should feel alive: active discussions, visible demand, people sharing what they built. This document covers the planned community features and their intent.
 
 ---
 
@@ -36,9 +36,9 @@ This keeps skills alive and accurate as models evolve without requiring the orig
 
 ## Project Showcase
 
-Users can share broader projects where they used one or more Collective skills — not just "I tried this skill" but "here's what I built with it."
+Users can share broader projects where they used one or more SkillBrick AI skills — not just "I tried this skill" but "here's what I built with it."
 
-**MCP-powered drafting:** The intended flow is that a user has the Collective MCP server installed in their agent environment. When they want to showcase a project, the AI reads their project context and auto-drafts the showcase post. The user reviews and publishes. This eliminates the friction of manual writeups and grounds the showcase in the actual project.
+**MCP-powered drafting:** The intended flow is that a user has the SkillBrick AI MCP server installed in their agent environment. When they want to showcase a project, the AI reads their project context and auto-drafts the showcase post. The user reviews and publishes. This eliminates the friction of manual writeups and grounds the showcase in the actual project.
 
 This makes the MCP server a two-way bridge: pull skills into the agent environment, push showcases back out to the community.
 

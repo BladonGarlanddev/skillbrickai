@@ -1,6 +1,6 @@
 # Skill Format
 
-Skills are the core unit of Collective. This document defines what a skill is and how it should be structured.
+Skills are the core unit of SkillBrick AI. This document defines what a skill is and how it should be structured.
 
 ---
 
@@ -67,7 +67,7 @@ The platform uses multiple signals to surface high-quality skills:
 
 - **Usage count** — how many times the skill has been downloaded or copied
 - **Community ratings** — explicit user ratings
-- **Verified/curated badge** — editorially reviewed by the Collective team
+- **Verified/curated badge** — editorially reviewed by the SkillBrick AI team
 - **Structured metadata** — skills with complete frontmatter rank higher in discovery
 
 ---

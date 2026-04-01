@@ -1,4 +1,4 @@
-# Collective — Design Brief 2
+# SkillBrick AI — Design Brief 2
 
 This brief extends the original design brief. All visual direction from Brief 1 applies — light themed, document-style, clean, minimal, approachable. This brief covers the community layer, authentication, and the token/badge system.
 
@@ -6,7 +6,7 @@ This brief extends the original design brief. All visual direction from Brief 1 
 
 ## Token System
 
-Collective uses tokens to encourage contribution rather than restrict access. The philosophy is generous: the platform wants people to use skills freely, and tokens are a gentle nudge toward giving back — not a paywall.
+SkillBrick AI uses tokens to encourage contribution rather than restrict access. The philosophy is generous: the platform wants people to use skills freely, and tokens are a gentle nudge toward giving back — not a paywall.
 
 ### Token Allocation
 - **Guest (not logged in):** 10 tokens on arrival, no account required
@@ -116,7 +116,7 @@ A dedicated area for posting skills that are needed.
 
 ### 6. Community — Project Showcase
 
-Users share projects they built with Collective skills.
+Users share projects they built with SkillBrick AI skills.
 
 - Each showcase has: project title, short description, skills used (linked), screenshots or text, author
 - Skills used are displayed as small linked chips — clicking goes to that skill's page

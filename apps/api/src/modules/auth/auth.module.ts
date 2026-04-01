@@ -15,7 +15,7 @@ import { BadgesModule } from '../badges/badges.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET', 'collective-dev-secret'),
+        secret: config.get('JWT_SECRET', 'skillbrickai-dev-secret'),
         signOptions: {
           expiresIn: config.get('JWT_EXPIRES_IN', '7d'),
         },

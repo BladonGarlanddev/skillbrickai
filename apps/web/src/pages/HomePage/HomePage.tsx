@@ -35,7 +35,7 @@ export default function HomePage() {
           </h1>
 
           <p className={styles.heroDescription}>
-            Collective is a community library where humans deposit accumulated knowledge
+            SkillBrick AI is a community library where humans deposit accumulated knowledge
             so that any AI, anywhere, can draw from it. Browse, copy, and make your agents smarter.
           </p>
 

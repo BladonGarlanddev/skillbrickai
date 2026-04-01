@@ -1,8 +1,8 @@
-# Collective — Figma Prompt 2
+# SkillBrick AI — Figma Prompt 2
 
 ## Context
 
-Collective is a community library for AI skills — prompt-based behavioral guides that people drop into their agent environments to improve how their AI behaves in specific domains. The visual language is established: light themed, document-style, clean and minimal, warm but not cozy. Think a well-designed whitepaper or Google Docs. No dark mode, no heavy dashboard energy, no neon.
+SkillBrick AI is a community library for AI skills — prompt-based behavioral guides that people drop into their agent environments to improve how their AI behaves in specific domains. The visual language is established: light themed, document-style, clean and minimal, warm but not cozy. Think a well-designed whitepaper or Google Docs. No dark mode, no heavy dashboard energy, no neon.
 
 This prompt covers the community layer, authentication, reputation systems, and several new page types. All new screens should feel continuous with the established visual language.
 
@@ -146,7 +146,7 @@ A dedicated page for skills that don't exist yet.
 **Request detail view:**
 - The request: domain, what behavior is needed, what problem it solves
 - Replies below — free-form, conversational
-- When a reply contains a link to a Collective skill, it renders as an **inline skill card preview**: compact, shows skill name, one-line description, author, tags, and a copy button
+- When a reply contains a link to a SkillBrick AI skill, it renders as an **inline skill card preview**: compact, shows skill name, one-line description, author, tags, and a copy button
 - No claiming, no assigning — just replies and the organic emergence of fulfilled requests
 - Fulfilled state: a light visual treatment on the request header (a soft label "Fulfilled" — not archived, still fully readable)
 
@@ -160,7 +160,7 @@ A dedicated page for skills that don't exist yet.
 
 ### 6. Community — Project Showcase
 
-Users share what they built using Collective skills.
+Users share what they built using SkillBrick AI skills.
 
 **Browse view:**
 - Showcase cards: project title, author (with score), skills used (small linked chips), one-line description
@@ -175,7 +175,7 @@ Users share what they built using Collective skills.
 
 **Submission form:**
 - Title, description, skills used (searchable chip input), optional image upload
-- A secondary option below the form, clearly marked as coming soon: *"Have your AI draft this for you — install the Collective MCP server"* with a placeholder state that anticipates Phase 2 without being confusing now
+- A secondary option below the form, clearly marked as coming soon: *"Have your AI draft this for you — install the SkillBrick AI MCP server"* with a placeholder state that anticipates Phase 2 without being confusing now
 
 ---
 
