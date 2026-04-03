@@ -13,8 +13,12 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.container}>
         <Link to="/" className={styles.logo}>
-          <div className={styles.logoCircle}>
-            <div className={styles.logoDot} />
+          <div className={styles.logoMark}>
+            <div className={styles.brick} />
+            <div className={styles.brickRow}>
+              <div className={styles.brickHalf} />
+              <div className={styles.brickHalf} />
+            </div>
           </div>
           <span className={styles.logoText}>SkillBrick AI</span>
         </Link>

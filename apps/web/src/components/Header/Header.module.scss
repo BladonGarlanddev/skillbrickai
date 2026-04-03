@@ -25,21 +25,30 @@
   color: inherit;
 }
 
-.logoCircle {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background-color: rgba($foreground, 0.05);
+.logoMark {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  width: 1.5rem;
 }
 
-.logoDot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background-color: rgba($foreground, 0.2);
+.brick {
+  height: 0.4rem;
+  border-radius: 2px;
+  background-color: $foreground;
+}
+
+.brickRow {
+  display: flex;
+  gap: 2px;
+}
+
+.brickHalf {
+  flex: 1;
+  height: 0.4rem;
+  border-radius: 2px;
+  background-color: $foreground;
+  opacity: 0.5;
 }
 
 .logoText {

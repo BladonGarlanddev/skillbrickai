@@ -300,3 +300,106 @@
   font-size: 0.875rem;
   line-height: 1.625;
 }
+
+// Bottom CTA
+.bottomCta {
+  @include container-narrow;
+  padding: 5rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.bottomCtaTitle {
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.bottomCtaDesc {
+  font-size: 1.125rem;
+  color: rgba($foreground, 0.6);
+  max-width: 32rem;
+  margin: 0 auto 2rem;
+  line-height: 1.625;
+}
+
+.bottomCtaActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// Footer
+.footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: rgba($foreground, 0.02);
+  padding: 3rem 1.5rem 1.5rem;
+}
+
+.footerInner {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.footerBrand {
+  max-width: 16rem;
+}
+
+.footerLogo {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.footerTagline {
+  color: rgba($foreground, 0.5);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 4rem;
+}
+
+.footerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  a {
+    text-decoration: none;
+    color: rgba($foreground, 0.6);
+    font-size: 0.875rem;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $foreground;
+    }
+  }
+}
+
+.footerHeading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba($foreground, 0.4);
+  margin-bottom: 0.25rem;
+}
+
+.footerBottom {
+  max-width: 72rem;
+  margin: 2rem auto 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 0.75rem;
+  color: rgba($foreground, 0.4);
+}

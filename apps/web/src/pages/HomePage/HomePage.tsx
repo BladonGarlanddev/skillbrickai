@@ -176,6 +176,54 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Bottom CTA */}
+      <section className={styles.bottomCta}>
+        <h2 className={styles.bottomCtaTitle}>Ready to supercharge your AI?</h2>
+        <p className={styles.bottomCtaDesc}>
+          Join a growing community of builders sharing the skills that make AI agents truly useful.
+        </p>
+        <div className={styles.bottomCtaActions}>
+          <Link to="/browse">
+            <Button size="lg">
+              Get Started
+              <ArrowRight style={{ width: '1rem', height: '1rem' }} />
+            </Button>
+          </Link>
+          <Link to="/submit">
+            <Button size="lg" variant="outline">
+              Share Your Expertise
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerBrand}>
+            <span className={styles.footerLogo}>SkillBrick AI</span>
+            <p className={styles.footerTagline}>Knowledge transfer, at machine scale.</p>
+          </div>
+          <div className={styles.footerLinks}>
+            <div className={styles.footerColumn}>
+              <h4 className={styles.footerHeading}>Product</h4>
+              <Link to="/browse">Browse Skills</Link>
+              <Link to="/submit">Contribute</Link>
+              <Link to="/community">Community</Link>
+            </div>
+            <div className={styles.footerColumn}>
+              <h4 className={styles.footerHeading}>Company</h4>
+              <Link to="/about">About</Link>
+              <Link to="/terms">Terms</Link>
+              <Link to="/privacy">Privacy</Link>
+            </div>
+          </div>
+        </div>
+        <div className={styles.footerBottom}>
+          <span>&copy; {new Date().getFullYear()} SkillBrick AI. All rights reserved.</span>
+        </div>
+      </footer>
     </div>
   );
 }
