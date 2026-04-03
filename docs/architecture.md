@@ -459,8 +459,6 @@ Swagger docs at `http://localhost:3000/api/docs`
 
 ## Deployment
 
-Hybrid model: static frontend hosted on Cloudflare, backend self-hosted locally via tunnel.
-
 ### Frontend — Cloudflare Pages
 
 The Vite-built React SPA is deployed to **Cloudflare Pages**.
@@ -468,26 +466,85 @@ The Vite-built React SPA is deployed to **Cloudflare Pages**.
 - Connect the repo to Cloudflare Pages
 - Build command: `pnpm --filter @skillbrickai/web build`
 - Output directory: `apps/web/dist`
-- Environment variable: `VITE_API_URL` → the tunnel subdomain (e.g. `https://api.yourdomain.com`)
+- Environment variable: `VITE_API_URL` → `https://api.skillbrickai.com`
 
-The frontend must read the API base URL from `import.meta.env.VITE_API_URL` so it works in both local dev and production.
+The frontend reads the API base URL from `import.meta.env.VITE_API_URL`.
 
-### Backend — Local machine + Cloudflare Tunnel
+### Backend — AWS EC2
 
-The NestJS API and PostgreSQL database run on a local machine. **Cloudflare Tunnel** (`cloudflared`) exposes the API to the internet without port forwarding or dynamic DNS.
+The NestJS API runs on an **Amazon Linux 2023 (ARM64) EC2 instance** in `us-east-2`.
 
-- Install `cloudflared` and authenticate with your Cloudflare account
-- Create a named tunnel and map it to a subdomain (e.g. `api.yourdomain.com`)
-- Point the tunnel at `http://localhost:3000`
-- Cloudflare handles HTTPS termination automatically
+| Resource | Value |
+|---|---|
+| Instance ID | `i-0c7aa5698d2a0e046` |
+| Name | `skillbrick-api` |
+| Public IP | `16.58.182.221` |
+| AMI | `al2023-ami` (ARM64) |
+| SSH key | `skillbrick-key` (`~/.ssh/skillbrick-key.pem`) |
+| Project path | `/home/ec2-user/collective` |
+| API domain | `https://api.skillbrickai.com` |
+
+SSH access:
+```bash
+ssh -i ~/.ssh/skillbrick-key.pem ec2-user@16.58.182.221
+```
+
+The API `.env` lives at `/home/ec2-user/collective/apps/api/.env`.
+
+### Database — AWS RDS
+
+PostgreSQL 16 on **Amazon RDS** in `us-east-2`.
+
+| Resource | Value |
+|---|---|
+| RDS endpoint | `agently-db.cjy4y8qecmnq.us-east-2.rds.amazonaws.com:5432` |
+| Database name | `skillbrick` |
+
+Connection string is configured in the EC2 `.env` file.
 
 ### CORS
 
-The API must allow requests from the Cloudflare Pages domain. Configure CORS in NestJS to accept the production frontend origin.
+The API allows requests from the Cloudflare Pages domain (`https://skillbrickai.com`). Configure via `WEB_URL` in the EC2 `.env`.
 
-### Why this setup
+---
 
-- **Cost:** $0/month beyond the domain name. Cloudflare Pages and Tunnels are free tier.
-- **Simplicity:** No cloud VMs to manage. The backend runs alongside the dev environment.
-- **Security:** No exposed ports or firewall changes. Tunnel handles ingress.
-- **Migration path:** If the backend needs to move to the cloud later, only the tunnel target changes — the frontend and DNS stay the same.
+## Seed Data
+
+The database is seeded with skills sourced from **real GitHub repositories**. No fake users or fabricated data.
+
+### How it works
+
+- `apps/api/src/prisma/seed.ts` — main seed script (wipes all tables, re-seeds)
+- `apps/api/src/prisma/seed-skills-data.json` — skill data with GitHub attribution
+
+### What gets created
+
+- **Users** created from real GitHub usernames (e.g. `f`, `PatrickJS`, `ArthurClune`)
+- **Avatars** generated via [DiceBear](https://www.dicebear.com/) "thumbs" style (deterministic from username)
+- **Skills** with `installCount` between 0–30
+- **Attribution fields** populated: `originalAuthorName`, `originalAuthorUrl`, `sourceUrl`
+
+### Sources
+
+| GitHub User | Real Name | Repo |
+|---|---|---|
+| `f` | Fatih Kadir Akin | [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) |
+| `PatrickJS` | — | [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules) |
+| `ArthurClune` | Arthur Clune | [claude-md-examples](https://github.com/ArthurClune/claude-md-examples) |
+| `devisasari` | — | contributor to awesome-chatgpt-prompts |
+| `kdargin` | — | contributor to awesome-chatgpt-prompts |
+
+### Running the seed against production
+
+```bash
+# SCP updated files to EC2
+scp -i ~/.ssh/skillbrick-key.pem apps/api/src/prisma/seed.ts ec2-user@16.58.182.221:/home/ec2-user/collective/apps/api/src/prisma/seed.ts
+scp -i ~/.ssh/skillbrick-key.pem apps/api/src/prisma/seed-skills-data.json ec2-user@16.58.182.221:/home/ec2-user/collective/apps/api/src/prisma/seed-skills-data.json
+
+# SSH in and run
+ssh -i ~/.ssh/skillbrick-key.pem ec2-user@16.58.182.221
+cd /home/ec2-user/collective/apps/api
+npx tsx src/prisma/seed.ts
+```
+
+Or locally: `pnpm db:seed` (uses local `DATABASE_URL` from `.env`).
