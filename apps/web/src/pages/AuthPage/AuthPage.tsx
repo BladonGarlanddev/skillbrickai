@@ -38,7 +38,8 @@ export default function AuthPage() {
   };
 
   const handleOAuth = (provider: string) => {
-    window.location.href = `/api/auth/${provider.toLowerCase()}`;
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+    window.location.href = `${apiUrl}/auth/${provider.toLowerCase()}`;
   };
 
   return (

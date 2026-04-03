@@ -21,7 +21,8 @@ model User {
   googleId       String?   @unique
   createdAt      DateTime  @default(now())
 
-  skills         Skill[]
+  skills         Skill[]   @relation("authoredSkills")
+  claimedSkills  Skill[]   @relation("claimedSkills")
   badges         Badge[]
   collections    Collection[]
   upvotes        Upvote[]
@@ -43,7 +44,15 @@ model Skill {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  author       User     @relation(fields: [authorId], references: [id])
+  // Attribution fields for externally sourced skills
+  originalAuthorName String?
+  originalAuthorUrl  String?
+  sourceUrl          String?
+  claimedById        String?
+  claimedAt          DateTime?
+
+  author       User     @relation("authoredSkills", fields: [authorId], references: [id])
+  claimedBy    User?    @relation("claimedSkills", fields: [claimedById], references: [id])
   tags         SkillTag[]
   testedOn     SkillTestedOn[]
   upvotes      Upvote[]

@@ -21,7 +21,10 @@ export default function SubmitPage() {
     domain: '',
     tags: '',
     testedOn: '',
-    content: ''
+    content: '',
+    originalAuthorName: '',
+    originalAuthorUrl: '',
+    sourceUrl: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +40,9 @@ export default function SubmitPage() {
         content: formData.content,
         tags: tags.length > 0 ? tags : undefined,
         testedOn: testedOn.length > 0 ? testedOn : undefined,
+        originalAuthorName: formData.originalAuthorName || undefined,
+        originalAuthorUrl: formData.originalAuthorUrl || undefined,
+        sourceUrl: formData.sourceUrl || undefined,
       });
       setShowSuccess(true);
       setTimeout(() => navigate('/browse'), 1400);
@@ -160,6 +166,52 @@ export default function SubmitPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Attribution Section */}
+        <div className={styles.metadataSection}>
+          <h2 className={styles.sectionTitle}>Attribution (Optional)</h2>
+          <p className={styles.sectionSubtitle}>
+            If this skill was originally created by someone else, give them credit here. They'll be able to claim it on the platform.
+          </p>
+
+          <div className={styles.field}>
+            <label htmlFor="originalAuthorName" className={styles.label}>Original Author Name</label>
+            <Input
+              id="originalAuthorName"
+              type="text"
+              placeholder="e.g., GitHub username or real name"
+              value={formData.originalAuthorName}
+              onChange={(e) => handleChange('originalAuthorName', e.target.value)}
+            />
+            <p className={styles.fieldHint}>The name of the person who originally created this skill</p>
+          </div>
+
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label htmlFor="originalAuthorUrl" className={styles.label}>Author URL</label>
+              <Input
+                id="originalAuthorUrl"
+                type="url"
+                placeholder="e.g., https://github.com/username"
+                value={formData.originalAuthorUrl}
+                onChange={(e) => handleChange('originalAuthorUrl', e.target.value)}
+              />
+              <p className={styles.fieldHint}>Link to their GitHub profile or website</p>
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="sourceUrl" className={styles.label}>Source URL</label>
+              <Input
+                id="sourceUrl"
+                type="url"
+                placeholder="e.g., https://github.com/user/repo"
+                value={formData.sourceUrl}
+                onChange={(e) => handleChange('sourceUrl', e.target.value)}
+              />
+              <p className={styles.fieldHint}>Link to where you found this skill</p>
+            </div>
           </div>
         </div>
 

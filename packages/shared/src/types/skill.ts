@@ -15,6 +15,14 @@ export interface SkillDto {
   };
   tags: string[];
   testedOn: string[];
+  originalAuthorName: string | null;
+  originalAuthorUrl: string | null;
+  sourceUrl: string | null;
+  claimedBy: {
+    id: string;
+    username: string;
+  } | null;
+  claimedAt: string | null;
 }
 
 export interface CreateSkillDto {
@@ -24,6 +32,9 @@ export interface CreateSkillDto {
   domain: string;
   tags: string[];
   testedOn: string[];
+  originalAuthorName?: string;
+  originalAuthorUrl?: string;
+  sourceUrl?: string;
 }
 
 export interface UpdateSkillDto {

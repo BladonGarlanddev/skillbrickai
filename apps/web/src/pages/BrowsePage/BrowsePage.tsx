@@ -132,7 +132,12 @@ export default function BrowsePage() {
                   <div className={styles.skillHeader}>
                     <div className={styles.skillHeaderText}>
                       <h3 className={styles.skillTitle}>{skill.title}</h3>
-                      <p className={styles.skillAuthor}>by {skill.author.name}</p>
+                      <p className={styles.skillAuthor}>
+                        {skill.originalAuthorName
+                          ? <>originally by {skill.originalAuthorName}{skill.claimedBy ? <> &middot; claimed</> : <> &middot; <span className={styles.unclaimed}>unclaimed</span></>}</>
+                          : <>by {skill.author.name}</>
+                        }
+                      </p>
                     </div>
                     <Badge variant="outline">{skill.domain}</Badge>
                   </div>

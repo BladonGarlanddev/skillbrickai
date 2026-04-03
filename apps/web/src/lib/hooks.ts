@@ -24,6 +24,11 @@ export interface NormalizedSkill {
   upvotes: number;
   createdAt: string;
   relatedSkills: string[];
+  originalAuthorName: string | null;
+  originalAuthorUrl: string | null;
+  sourceUrl: string | null;
+  claimedBy: { id: string; username: string } | null;
+  claimedAt: string | null;
 }
 
 export interface NormalizedCommunityUser {
@@ -124,6 +129,11 @@ function normalizeSkill(s: any): NormalizedSkill {
     upvotes: s._count?.upvotes ?? 0,
     createdAt: s.createdAt,
     relatedSkills: [] as string[],
+    originalAuthorName: s.originalAuthorName ?? null,
+    originalAuthorUrl: s.originalAuthorUrl ?? null,
+    sourceUrl: s.sourceUrl ?? null,
+    claimedBy: s.claimedBy ?? null,
+    claimedAt: s.claimedAt ?? null,
   };
 }
 

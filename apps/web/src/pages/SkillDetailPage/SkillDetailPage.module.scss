@@ -301,3 +301,30 @@
   color: rgba($foreground, 0.7);
   line-height: 1.625;
 }
+
+.claimedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.6);
+}
+
+.attributionLink {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: rgba($foreground, 0.7);
+  }
+}
+
+.claimButton {
+  margin-top: 1rem;
+  width: 100%;
+}

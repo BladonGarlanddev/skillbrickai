@@ -47,6 +47,18 @@ export class CreateSkillDto {
   @IsArray()
   @IsString({ each: true })
   testedOn?: string[];
+
+  @IsOptional()
+  @IsString()
+  originalAuthorName?: string;
+
+  @IsOptional()
+  @IsString()
+  originalAuthorUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  sourceUrl?: string;
 }
 
 export class UpdateSkillDto {
@@ -189,5 +201,17 @@ export class SkillsController {
     @Param('id') id: string,
   ) {
     return this.skillsService.toggleUpvote(userId, id);
+  }
+
+  @Post(':id/claim')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Claim an attributed skill as original author' })
+  async claim(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+  ) {
+    return this.skillsService.claimSkill(userId, id);
   }
 }

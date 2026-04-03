@@ -1,19 +1,39 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Copy, Download, ArrowLeft } from 'lucide-react';
+import { Copy, Download, ArrowLeft, ExternalLink, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Upvote } from '@/components/Upvote/Upvote';
 import { SuccessCheckmark } from '@/components/SuccessCheckmark/SuccessCheckmark';
 import { useSkill } from '@/lib/hooks';
+import { useAuthStore } from '@/stores/auth.store';
+import api from '@/lib/api';
 import styles from './SkillDetailPage.module.scss';
 
 export default function SkillDetailPage() {
   const { skillId } = useParams();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [claiming, setClaiming] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
-  const { data: skill, isLoading } = useSkill(skillId);
+  const { data: skill, isLoading, refetch } = useSkill(skillId);
+
+  const isAttributed = !!skill?.originalAuthorName;
+  const isClaimed = !!skill?.claimedBy;
+
+  const handleClaim = async () => {
+    if (!skill) return;
+    setClaiming(true);
+    try {
+      await api.post(`/skills/${skill.id}/claim`);
+      refetch();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to claim skill');
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   if (isLoading) {
     return <div className={styles.notFound}><p>Loading...</p></div>;
@@ -82,10 +102,35 @@ export default function SkillDetailPage() {
               <h1 className={styles.skillTitle}>{skill.title}</h1>
               <p className={styles.skillDescription}>{skill.description}</p>
               <div className={styles.skillByline}>
-                <span className={styles.bylineLabel}>by</span>
-                <Link to={`/profile/${skill.author.id}`} className={styles.bylineAuthor}>
-                  {skill.author.name}
-                </Link>
+                {isAttributed ? (
+                  <>
+                    <span className={styles.bylineLabel}>originally by</span>
+                    {skill.originalAuthorUrl ? (
+                      <a href={skill.originalAuthorUrl} target="_blank" rel="noopener noreferrer" className={styles.bylineAuthor}>
+                        {skill.originalAuthorName}
+                        <ExternalLink style={{ width: '0.75rem', height: '0.75rem', marginLeft: '0.25rem', display: 'inline' }} />
+                      </a>
+                    ) : (
+                      <span className={styles.bylineAuthor}>{skill.originalAuthorName}</span>
+                    )}
+                    {isClaimed && (
+                      <>
+                        <span className={styles.bylineSep}>{'\u2022'}</span>
+                        <span className={styles.claimedBadge}>
+                          <UserCheck style={{ width: '0.75rem', height: '0.75rem' }} />
+                          Claimed by <Link to={`/profile/${skill.claimedBy!.id}`} className={styles.bylineAuthor}>{skill.claimedBy!.username}</Link>
+                        </span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.bylineLabel}>by</span>
+                    <Link to={`/profile/${skill.author.id}`} className={styles.bylineAuthor}>
+                      {skill.author.name}
+                    </Link>
+                  </>
+                )}
                 <span className={styles.bylineSep}>{'\u2022'}</span>
                 <span className={styles.bylineDate}>
                   {new Date(skill.createdAt).toLocaleDateString('en-US', {
@@ -162,8 +207,58 @@ export default function SkillDetailPage() {
               </div>
             </div>
 
+            {isAttributed && (
+              <div className={styles.sidebarCard}>
+                <h3 className={styles.sidebarTitle}>Attribution</h3>
+                <div className={styles.detailsList}>
+                  <div className={styles.detailItem}>
+                    <div className={styles.detailLabel}>Original Author</div>
+                    <div className={styles.detailValue}>
+                      {skill.originalAuthorUrl ? (
+                        <a href={skill.originalAuthorUrl} target="_blank" rel="noopener noreferrer" className={styles.attributionLink}>
+                          {skill.originalAuthorName}
+                          <ExternalLink style={{ width: '0.75rem', height: '0.75rem', marginLeft: '0.25rem' }} />
+                        </a>
+                      ) : (
+                        skill.originalAuthorName
+                      )}
+                    </div>
+                  </div>
+                  {skill.sourceUrl && (
+                    <div className={styles.detailItem}>
+                      <div className={styles.detailLabel}>Source</div>
+                      <a href={skill.sourceUrl} target="_blank" rel="noopener noreferrer" className={styles.attributionLink}>
+                        View Original
+                        <ExternalLink style={{ width: '0.75rem', height: '0.75rem', marginLeft: '0.25rem' }} />
+                      </a>
+                    </div>
+                  )}
+                  <div className={styles.detailItem}>
+                    <div className={styles.detailLabel}>Status</div>
+                    {isClaimed ? (
+                      <Badge variant="secondary">Claimed</Badge>
+                    ) : (
+                      <Badge variant="outline">Unclaimed</Badge>
+                    )}
+                  </div>
+                </div>
+                {!isClaimed && user && (
+                  <Button
+                    onClick={handleClaim}
+                    disabled={claiming}
+                    variant="outline"
+                    size="sm"
+                    className={styles.claimButton}
+                  >
+                    <UserCheck style={{ width: '0.875rem', height: '0.875rem' }} />
+                    {claiming ? 'Claiming...' : 'Claim This Skill'}
+                  </Button>
+                )}
+              </div>
+            )}
+
             <div className={styles.sidebarCard}>
-              <h3 className={styles.sidebarTitle}>About the Author</h3>
+              <h3 className={styles.sidebarTitle}>{isAttributed ? 'Posted By' : 'About the Author'}</h3>
 
               <Link to={`/profile/${skill.author.id}`} className={styles.authorCard}>
                 <img

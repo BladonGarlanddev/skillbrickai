@@ -21,6 +21,11 @@ export const mockSkill: NormalizedSkill = {
   upvotes: 42,
   createdAt: '2026-03-01T00:00:00Z',
   relatedSkills: [],
+  originalAuthorName: null,
+  originalAuthorUrl: null,
+  sourceUrl: null,
+  claimedBy: null,
+  claimedAt: null,
 };
 
 export const mockSkill2: NormalizedSkill = {
@@ -36,6 +41,11 @@ export const mockSkill2: NormalizedSkill = {
   upvotes: 18,
   createdAt: '2026-03-05T00:00:00Z',
   relatedSkills: [],
+  originalAuthorName: null,
+  originalAuthorUrl: null,
+  sourceUrl: null,
+  claimedBy: null,
+  claimedAt: null,
 };
 
 export const mockPost: NormalizedPost = {

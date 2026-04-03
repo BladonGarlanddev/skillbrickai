@@ -61,6 +61,7 @@ export class SkillsService {
           author: {
             select: { id: true, username: true, avatarUrl: true },
           },
+          claimedBy: { select: { id: true, username: true } },
           tags: true,
           testedOn: true,
           _count: { select: { upvotes: true } },
@@ -92,6 +93,9 @@ export class SkillsService {
       domain: string;
       tags?: string[];
       testedOn?: string[];
+      originalAuthorName?: string;
+      originalAuthorUrl?: string;
+      sourceUrl?: string;
     },
   ) {
     const skill = await this.prisma.skill.create({
@@ -101,6 +105,9 @@ export class SkillsService {
         content: data.content,
         domain: data.domain,
         authorId: userId,
+        originalAuthorName: data.originalAuthorName || null,
+        originalAuthorUrl: data.originalAuthorUrl || null,
+        sourceUrl: data.sourceUrl || null,
         tags: data.tags
           ? { create: data.tags.map((tag) => ({ tag })) }
           : undefined,
@@ -110,6 +117,7 @@ export class SkillsService {
       },
       include: {
         author: { select: { id: true, username: true, avatarUrl: true } },
+        claimedBy: { select: { id: true, username: true } },
         tags: true,
         testedOn: true,
       },
@@ -141,6 +149,7 @@ export class SkillsService {
             communityScore: true,
           },
         },
+        claimedBy: { select: { id: true, username: true } },
         tags: true,
         testedOn: true,
         _count: { select: { upvotes: true } },
@@ -201,6 +210,7 @@ export class SkillsService {
       data: updateData,
       include: {
         author: { select: { id: true, username: true, avatarUrl: true } },
+        claimedBy: { select: { id: true, username: true } },
         tags: true,
         testedOn: true,
       },
@@ -272,6 +282,41 @@ export class SkillsService {
       message: 'Skill installed successfully',
       content: skill.content,
     };
+  }
+
+  async claimSkill(userId: string, skillId: string) {
+    const skill = await this.prisma.skill.findUnique({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    if (!skill.originalAuthorName) {
+      throw new BadRequestException('This skill is not an attributed skill');
+    }
+
+    if (skill.claimedById) {
+      throw new BadRequestException('This skill has already been claimed');
+    }
+
+    const updated = await this.prisma.skill.update({
+      where: { id: skillId },
+      data: {
+        claimedById: userId,
+        claimedAt: new Date(),
+      },
+      include: {
+        author: { select: { id: true, username: true, avatarUrl: true } },
+        claimedBy: { select: { id: true, username: true } },
+        tags: true,
+        testedOn: true,
+        _count: { select: { upvotes: true } },
+      },
+    });
+
+    return updated;
   }
 
   async toggleUpvote(userId: string, skillId: string) {
