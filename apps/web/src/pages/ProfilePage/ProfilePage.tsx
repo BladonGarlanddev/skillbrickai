@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
@@ -27,6 +28,13 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>{`${user.name} | SkillBrick AI`}</title>
+        <meta name="description" content={user.bio || `View ${user.name}'s profile and published AI skills on SkillBrick AI.`} />
+        <meta property="og:title" content={`${user.name} | SkillBrick AI`} />
+        <meta property="og:description" content={user.bio || `View ${user.name}'s profile and published AI skills on SkillBrick AI.`} />
+      </Helmet>
+
       <Button
         variant="ghost"
         size="sm"

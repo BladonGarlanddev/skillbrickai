@@ -4,10 +4,143 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SkillBrick AI is a community library for discovering, sharing, and installing AI skills and prompts. Browse expert system prompts for coding, writing, research, and more. Make your AI agents smarter with curated knowledge." />
+    <meta name="keywords" content="AI skills, AI prompts, system prompts, prompt library, prompt engineering, AI agents, MCP server, Claude prompts, ChatGPT prompts, LLM tools, AI knowledge base, reusable prompts" />
+    <meta name="author" content="SkillBrick AI" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="canonical" href="https://skillbrickai.com/" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SkillBrick AI - Discover & Share AI Skills" />
+    <meta property="og:description" content="A community library for discovering, sharing, and installing AI skills and prompts. Browse expert system prompts for coding, writing, research, and more." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://skillbrickai.com/" />
+    <meta property="og:site_name" content="SkillBrick AI" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://skillbrickai.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SkillBrick AI - A community library for AI skills and prompts" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SkillBrick AI - Discover & Share AI Skills" />
+    <meta name="twitter:description" content="A community library for discovering, sharing, and installing AI skills and prompts. Make your AI agents smarter with curated knowledge." />
+    <meta name="twitter:image" content="https://skillbrickai.com/og-image.png" />
+    <meta name="twitter:image:alt" content="SkillBrick AI - A community library for AI skills and prompts" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://skillbrickai.com/#website",
+          "url": "https://skillbrickai.com/",
+          "name": "SkillBrick AI",
+          "description": "A community library for discovering, sharing, and installing AI skills and prompts. Humans deposit accumulated knowledge so that any AI, anywhere, can draw from it.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://skillbrickai.com/browse?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://skillbrickai.com/#organization",
+          "name": "SkillBrick AI",
+          "url": "https://skillbrickai.com/",
+          "logo": "https://skillbrickai.com/vite.svg",
+          "description": "Community-powered library of reusable AI skills and system prompts for AI agents."
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://skillbrickai.com/#webapp",
+          "name": "SkillBrick AI",
+          "url": "https://skillbrickai.com/",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Any",
+          "description": "Browse, share, and install AI skills and system prompts. Integrates via REST API and MCP Server for AI agents.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Browse and search AI skills by domain, tag, or keyword",
+            "Copy or download skill prompts for use with any AI model",
+            "MCP Server integration for AI agents (Claude, etc.)",
+            "REST API for programmatic access",
+            "Community contributions and upvoting",
+            "Curated skill collections",
+            "Token-based economy for skill sharing"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is SkillBrick AI?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SkillBrick AI is a community library where users share reusable AI system prompts called 'skills'. These skills give AI agents specialized capabilities across domains like coding, writing, research, and education."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do AI agents use SkillBrick AI?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "AI agents can access SkillBrick AI through the MCP Server (Model Context Protocol) for direct integration, or via the REST API. The MCP server provides tools like search_skills, get_skill, and install_skill that agents can call directly."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What AI models work with SkillBrick AI skills?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Skills are reusable system prompts that work with any AI model that accepts system instructions, including Claude, ChatGPT, Gemini, and others. Each skill lists which models it has been tested on."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is SkillBrick AI free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, browsing and searching skills is free and requires no authentication. New accounts receive 30 tokens. Publishing a skill earns 10 tokens, and installing a skill costs 1 token."
+              }
+            }
+          ]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "SkillBrick AI MCP Server",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Any",
+          "description": "Model Context Protocol server that allows AI agents to search, browse, and install skills from the SkillBrick AI library.",
+          "downloadUrl": "https://www.npmjs.com/package/@skillbrickai/mcp-server",
+          "installUrl": "https://skillbrickai.com/guide#mcp-server",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>SkillBrick AI</title>
+    <title>SkillBrick AI - Discover & Share AI Skills and Prompts</title>
   </head>
   <body>
     <div id="root"></div>

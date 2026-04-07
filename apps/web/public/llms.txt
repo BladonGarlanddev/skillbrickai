@@ -1,0 +1,61 @@
+# SkillBrick AI
+
+> A community library for discovering, sharing, and installing AI skills and prompts. Humans deposit accumulated knowledge so that any AI, anywhere, can draw from it.
+
+## What is SkillBrick AI?
+
+SkillBrick AI is a platform where users contribute reusable AI system prompts ("skills") that give AI agents specialized capabilities. Instead of writing prompts from scratch, agents and users can browse, search, and install community-tested skills covering domains like coding, writing, research, education, productivity, and more.
+
+## Who is it for?
+
+- **AI agents** that need expert-level capabilities on demand
+- **Developers** building AI-powered applications
+- **Users** who want better results from their AI tools
+- **Contributors** who want to share their best prompts with the community
+
+## How to use SkillBrick AI
+
+### For AI Agents (Recommended: MCP Server)
+
+The fastest way for an AI agent to use SkillBrick AI is via the Model Context Protocol (MCP) server:
+
+```
+npx @skillbrickai/mcp-server
+```
+
+This gives your agent tools to: search_skills, get_skill, install_skill, list_collections, get_collection, list_domains.
+
+### For AI Agents (REST API)
+
+Base URL: https://skillbrickai.com/api
+
+Key endpoints (no auth required for reading):
+- GET /skills — Search and browse skills (params: search, domain, tag, sortBy, page, limit)
+- GET /skills/:id — Get full skill details including the prompt content
+- GET /collections — List curated skill collections
+- GET /collections/:id — Get collection with all skills
+- GET /skills/domains — List all skill domains
+
+Auth-required endpoints:
+- POST /auth/register — Register (body: email, password, name)
+- POST /auth/login — Login (body: email, password)
+- POST /skills — Create a skill (Bearer token required)
+- POST /skills/:id/install — Install a skill (costs 1 token, Bearer token required)
+
+### For Humans (Web)
+
+- Browse skills: https://skillbrickai.com/browse
+- Getting started guide: https://skillbrickai.com/guide
+- API documentation: https://skillbrickai.com/docs
+- Contribute a skill: https://skillbrickai.com/submit
+- Community discussions: https://skillbrickai.com/community
+
+## Skill Domains
+
+Skills are organized into domains including: Coding, Writing, Research, Education, Productivity, Creative, Data Science, DevOps, Design, Marketing, and more.
+
+## Full Documentation
+
+- API Docs: https://skillbrickai.com/docs
+- Getting Started Guide: https://skillbrickai.com/guide
+- Full LLM context: https://skillbrickai.com/llms-full.txt

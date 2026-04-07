@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
@@ -47,6 +48,12 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>Community | SkillBrick AI</title>
+        <meta name="description" content="Join the SkillBrick AI community. Discuss skills, request new ones, and share what you've built with AI." />
+        <link rel="canonical" href="https://skillbrickai.com/community" />
+      </Helmet>
+
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Community</h1>

@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "SkillBrick AI",
+  "name_for_model": "skillbrickai",
+  "description_for_human": "Discover, share, and install AI skills and prompts. A community library where humans deposit knowledge so any AI can use it.",
+  "description_for_model": "SkillBrick AI is a community library of reusable AI system prompts (called 'skills'). Use this to search for expert-level prompts by domain (coding, writing, research, education, etc.), retrieve full prompt content, and install skills. Skills are system prompts that give AI agents specialized capabilities. The API supports searching by keyword, domain, and tag. No authentication is needed for browsing and reading skills. Base URL: https://skillbrickai.com/api. Key endpoints: GET /skills (search), GET /skills/:id (get skill with full prompt content), GET /collections (browse curated collections). For full API docs see https://skillbrickai.com/docs. For MCP server integration: npx @skillbrickai/mcp-server",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://skillbrickai.com/api/openapi.json"
+  },
+  "logo_url": "https://skillbrickai.com/vite.svg",
+  "contact_email": "support@skillbrickai.com",
+  "legal_info_url": "https://skillbrickai.com/terms"
+}

@@ -10,6 +10,8 @@ import AuthPage from '@/pages/AuthPage/AuthPage';
 import CommunityPage from '@/pages/CommunityPage/CommunityPage';
 import CollectionDetailPage from '@/pages/CollectionDetailPage/CollectionDetailPage';
 import AuthCallbackPage from '@/pages/AuthCallbackPage/AuthCallbackPage';
+import DocsPage from '@/pages/DocsPage/DocsPage';
+import GuidePage from '@/pages/GuidePage/GuidePage';
 
 function RootLayout() {
   return (
@@ -38,6 +40,8 @@ export function AppRoutes() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/community" element={<CommunityPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/guide" element={<GuidePage />} />
         <Route path="/collection/:collectionId" element={<CollectionDetailPage />} />
 
         <Route element={<RequireAuth />}>

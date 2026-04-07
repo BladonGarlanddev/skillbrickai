@@ -1,0 +1,370 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  @include container-narrow;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+// Header
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  color: rgba($foreground, 0.6);
+  line-height: 1.625;
+  font-size: 1.0625rem;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+// Table of contents
+.toc {
+  margin-bottom: 3rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  padding: 1.25rem 1.5rem;
+}
+
+.tocLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba($foreground, 0.5);
+  margin-bottom: 0.75rem;
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.tocLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.7);
+  text-decoration: none;
+  padding: 0.25rem 0;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $foreground;
+  }
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgba($foreground, 0.25);
+    flex-shrink: 0;
+  }
+}
+
+// Sections
+.section {
+  margin-bottom: 3.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sectionIntro {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba($foreground, 0.7);
+  margin-bottom: 1.5rem;
+}
+
+// Steps
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  @include flex-center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $foreground;
+  color: $primary-foreground;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.stepContent {
+  flex: 1;
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.375rem;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.625;
+    color: rgba($foreground, 0.6);
+  }
+}
+
+// Code blocks
+.codeBlock {
+  border-radius: $radius;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 0.75rem;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.codeLang {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.codeContent {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.625;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  code {
+    font-family: inherit;
+  }
+}
+
+// Inline code
+.inlineCode {
+  background-color: $muted;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+// Cards grid
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  padding: 1.25rem;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  h4 {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    line-height: 1.625;
+    color: rgba($foreground, 0.6);
+  }
+}
+
+.cardIcon {
+  @include flex-center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: rgba($foreground, 0.5);
+}
+
+// Info box
+.infoBox {
+  background-color: $muted;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.625;
+  color: rgba($foreground, 0.7);
+
+  strong {
+    color: $foreground;
+  }
+}
+
+// Method badges
+.method {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  letter-spacing: 0.025em;
+  vertical-align: middle;
+}
+
+.methodGet {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.methodPost {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+// Tool list
+.toolList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.tool {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 0.375rem;
+
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.toolName {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  background-color: #eff6ff;
+  color: #2563eb;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.toolDesc {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.6);
+}
+
+// Links
+.link {
+  color: $foreground;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+  transition: text-decoration-color 0.15s ease;
+
+  &:hover {
+    text-decoration-color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+// Paragraph content
+.content {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: rgba($foreground, 0.7);
+  margin-bottom: 1rem;
+
+  strong {
+    color: $foreground;
+    font-weight: 500;
+  }
+}
+
+// Subsection
+.subsection {
+  margin-bottom: 2rem;
+}
+
+.subsectionTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}

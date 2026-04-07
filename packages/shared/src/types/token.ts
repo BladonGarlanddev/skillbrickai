@@ -25,3 +25,33 @@ export const TOKEN_REWARDS = {
   SKILL_INSTALLED: -1,
   GUEST_INITIAL: 10,
 } as const;
+
+export interface CreditOption {
+  method: 'submit_skill' | 'subscription';
+  description: string;
+  creditsAwarded: number | 'unlimited';
+  actionUrl?: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: string;
+  interval: 'month' | 'year';
+  creditsPerMonth: number | 'unlimited';
+  features: string[];
+}
+
+export interface PricingInfo {
+  currentBalance: number | null;
+  earnCredits: CreditOption[];
+  subscriptionPlans: SubscriptionPlan[];
+}
+
+export interface InsufficientCreditsError {
+  error: 'INSUFFICIENT_CREDITS';
+  message: string;
+  currentBalance: number;
+  requiredCredits: number;
+  options: CreditOption[];
+}

@@ -48,6 +48,14 @@ export function Header() {
               Contribute
             </Button>
           </Link>
+          <Link to="/guide">
+            <Button
+              variant={location.pathname.startsWith('/guide') || location.pathname.startsWith('/docs') ? 'secondary' : 'ghost'}
+              size="sm"
+            >
+              Docs
+            </Button>
+          </Link>
         </nav>
 
         <div className={styles.actions}>

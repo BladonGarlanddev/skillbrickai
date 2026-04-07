@@ -1,6 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import * as path from 'path';
 import * as fs from 'fs';
+import { createHash } from 'crypto';
+
+function generateSlug(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+function hashContent(content: string): string {
+  return createHash('sha256').update(content).digest('hex');
+}
+
+function skillMeta(name: string, content: string) {
+  return { slug: generateSlug(name), contentHash: hashContent(content) };
+}
 
 const prisma = new PrismaClient();
 
@@ -99,11 +111,15 @@ async function main() {
     // Random install count between 0 and 30
     const installCount = Math.floor(Math.random() * 31);
 
+    const { slug, contentHash } = skillMeta(skill.name, skill.content);
+
     await prisma.skill.create({
       data: {
         name: skill.name,
+        slug,
         description: skill.description,
         content: skill.content,
+        contentHash,
         domain: skill.domain,
         authorId,
         installCount,

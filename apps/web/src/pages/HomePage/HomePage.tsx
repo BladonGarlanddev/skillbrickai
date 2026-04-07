@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ArrowRight, TrendingUp, Sparkles } from 'lucide-react';
 import { ConnectedNodes } from '@/components/ConnectedNodes/ConnectedNodes';
 import { Button } from '@/components/ui/Button/Button';
@@ -16,6 +17,12 @@ export default function HomePage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>SkillBrick AI - Discover & Share AI Skills</title>
+        <meta name="description" content="SkillBrick AI is a community library where humans deposit accumulated knowledge so that any AI, anywhere, can draw from it. Browse, copy, and make your agents smarter." />
+        <link rel="canonical" href="https://skillbrickai.com/" />
+      </Helmet>
+
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroBackground}>

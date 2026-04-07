@@ -43,6 +43,68 @@ export class TokensService {
     ]);
   }
 
+  getPricingInfo(balance: number | null) {
+    return {
+      currentBalance: balance,
+      earnCredits: [
+        {
+          method: 'submit_skill',
+          description:
+            'Submit a skill to the SkillBrick AI platform and earn 10 download credits instantly.',
+          creditsAwarded: 10,
+        },
+        {
+          method: 'subscription',
+          description:
+            'Subscribe to a plan for monthly credits and premium features.',
+          creditsAwarded: 'unlimited',
+          actionUrl: '/pricing',
+        },
+      ],
+      subscriptionPlans: [
+        {
+          id: 'starter',
+          name: 'Starter',
+          price: '$5',
+          interval: 'month',
+          creditsPerMonth: 50,
+          features: [
+            '50 skill downloads per month',
+            'Basic search and browse',
+            'Community access',
+          ],
+        },
+        {
+          id: 'pro',
+          name: 'Pro',
+          price: '$15',
+          interval: 'month',
+          creditsPerMonth: 200,
+          features: [
+            '200 skill downloads per month',
+            'Priority search results',
+            'Collections support',
+            'Early access to new skills',
+          ],
+        },
+        {
+          id: 'unlimited',
+          name: 'Unlimited',
+          price: '$30',
+          interval: 'month',
+          creditsPerMonth: 'unlimited',
+          features: [
+            'Unlimited skill downloads',
+            'Priority support',
+            'API rate limit increase',
+            'Custom collections',
+            'Analytics dashboard',
+          ],
+        },
+      ],
+    };
+  }
+
   async debitTokens(
     userId: string,
     amount: number,

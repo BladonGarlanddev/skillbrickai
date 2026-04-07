@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Badge } from '@/components/ui/Badge/Badge';
@@ -37,6 +38,32 @@ export default function BrowsePage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>Browse AI Skills & Prompts | SkillBrick AI</title>
+        <meta name="description" content="Discover AI skills and prompts across domains — coding, writing, research, education, and more. Search community-tested system prompts to make your AI agent smarter." />
+        <link rel="canonical" href="https://skillbrickai.com/browse" />
+        <meta property="og:title" content="Browse AI Skills & Prompts | SkillBrick AI" />
+        <meta property="og:description" content="Search and discover community-tested AI system prompts across coding, writing, research, education, and more." />
+        <meta property="og:url" content="https://skillbrickai.com/browse" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "Browse AI Skills",
+            "description": "Discover AI skills and prompts across domains. Search community-tested system prompts to make your AI agent smarter.",
+            "url": "https://skillbrickai.com/browse",
+            "isPartOf": { "@type": "WebSite", "name": "SkillBrick AI", "url": "https://skillbrickai.com/" },
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://skillbrickai.com/" },
+                { "@type": "ListItem", "position": 2, "name": "Browse Skills" }
+              ]
+            }
+          })}
+        </script>
+      </Helmet>
+
       {/* Search Section */}
       <div className={styles.searchSection}>
         <h1 className={styles.title}>Browse Skills</h1>

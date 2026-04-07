@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Copy, Download, ArrowLeft, ExternalLink, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
@@ -74,6 +75,59 @@ export default function SkillDetailPage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>{`${skill.title} | SkillBrick AI`}</title>
+        <meta name="description" content={skill.description} />
+        <meta property="og:title" content={`${skill.title} - AI Skill | SkillBrick AI`} />
+        <meta property="og:description" content={skill.description} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://skillbrickai.com/skill/${skill.id}`} />
+        <meta property="article:author" content={skill.author.name} />
+        <meta property="article:section" content={skill.domain} />
+        <link rel="canonical" href={`https://skillbrickai.com/skill/${skill.id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": skill.title,
+            "description": skill.description,
+            "author": {
+              "@type": "Person",
+              "name": skill.author.name,
+              "url": `https://skillbrickai.com/profile/${skill.author.id}`
+            },
+            "datePublished": skill.createdAt,
+            "keywords": skill.tags.join(", "),
+            "genre": skill.domain,
+            "interactionStatistic": [
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/LikeAction",
+                "userInteractionCount": skill.upvotes
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/DownloadAction",
+                "userInteractionCount": skill.downloads
+              }
+            ],
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "SkillBrick AI",
+              "url": "https://skillbrickai.com/"
+            },
+            "breadcrumb": {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://skillbrickai.com/" },
+                { "@type": "ListItem", "position": 2, "name": "Browse Skills", "item": "https://skillbrickai.com/browse" },
+                { "@type": "ListItem", "position": 3, "name": skill.title }
+              ]
+            }
+          })}
+        </script>
+      </Helmet>
+
       <SuccessCheckmark visible={copied} label="Copied!" />
 
       {/* Header */}

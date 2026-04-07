@@ -1,9 +1,12 @@
 export interface SkillDto {
   id: string;
   name: string;
+  slug: string;
   description: string;
   content: string;
+  contentHash: string;
   domain: string;
+  version: number;
   installCount: number;
   upvoteCount: number;
   createdAt: string;
@@ -44,6 +47,35 @@ export interface UpdateSkillDto {
   domain?: string;
   tags?: string[];
   testedOn?: string[];
+}
+
+export interface UpsertSkillDto {
+  name: string;
+  description: string;
+  content: string;
+  domain: string;
+  tags?: string[];
+  testedOn?: string[];
+}
+
+export interface BulkSyncDto {
+  skills: UpsertSkillDto[];
+}
+
+export interface UpsertResult {
+  action: 'created' | 'updated' | 'unchanged';
+  version: number;
+  skill: SkillDto;
+}
+
+export interface BulkSyncResult {
+  summary: {
+    created: number;
+    updated: number;
+    unchanged: number;
+    total: number;
+  };
+  results: UpsertResult[];
 }
 
 export interface SkillSearchParams {

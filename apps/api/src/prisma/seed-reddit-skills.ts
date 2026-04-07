@@ -1,8 +1,11 @@
 /**
- * Seed script for community-sourced AI skills.
- * Run after the main seed.ts to add curated skills from popular prompt repositories.
+ * Seed script for Reddit-sourced AI skills.
+ * Run after the main seed.ts to add curated skills from Reddit prompt communities.
  *
- * Usage: npx ts-node apps/api/src/prisma/seed-community-skills.ts
+ * Usage: npx ts-node apps/api/src/prisma/seed-reddit-skills.ts
+ *
+ * Sources: r/ChatGPTPromptGenius, r/PromptEngineering, r/ChatGPT, r/ClaudeAI,
+ * and the awesome-chatgpt-prompts community (prompts.chat).
  *
  * This script assigns skills to existing seeded users (from seed.ts) in a
  * round-robin fashion and creates the associated tags and testedOn records.
@@ -32,9 +35,9 @@ interface SkillData {
 }
 
 async function main() {
-  console.log('Seeding community skills...');
+  console.log('Seeding Reddit-sourced skills...');
 
-  const dataPath = path.join(__dirname, 'seed-skills-data.json');
+  const dataPath = path.join(__dirname, 'seed-reddit-skills-data.json');
   const skills: SkillData[] = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 
   // Get existing users to assign as authors
@@ -45,7 +48,7 @@ async function main() {
   }
 
   let created = 0;
-  const baseDate = new Date('2026-01-05');
+  const baseDate = new Date('2026-02-10');
 
   for (let i = 0; i < skills.length; i++) {
     const skill = skills[i];
@@ -88,7 +91,7 @@ async function main() {
     console.log(`  Created: "${skill.name}" (${skill.domain})`);
   }
 
-  console.log(`\nDone! Created ${created} community skills.`);
+  console.log(`\nDone! Created ${created} Reddit-sourced skills.`);
 }
 
 main()

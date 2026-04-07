@@ -4,26 +4,31 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const DEFAULT_API_URL = "http://localhost:3000";
+const API_URL = (process.env.SKILLBRICK_API_URL || "https://skillbrickai.com").replace(/\/+$/, "");
+const API_TOKEN = process.env.SKILLBRICK_API_TOKEN || "";
 
-function getApiUrl(): string {
-  return process.env.SKILLBRICK_API_URL || DEFAULT_API_URL;
-}
+async function apiFetch(path: string, options: RequestInit = {}): Promise<any> {
+  const url = `${API_URL}${path}`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (API_TOKEN) {
+    headers["Authorization"] = `Bearer ${API_TOKEN}`;
+  }
 
-async function apiFetch(path: string, init?: RequestInit): Promise<any> {
-  const url = `${getApiUrl()}${path}`;
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
+  const res = await fetch(url, { ...options, headers });
+
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`API ${res.status}: ${body}`);
+    throw new Error(`API request failed: ${res.status} ${res.statusText}${body ? ` - ${body}` : ""}`);
   }
+
   return res.json();
+}
+
+function textResult(content: string) {
+  return { content: [{ type: "text" as const, text: content }] };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +119,43 @@ function formatSkill(skill: any, includeContent: boolean): string {
   }
 
   return out;
+}
+
+/** Score a skill's relevance to a query */
+function scoreSkill(
+  skill: any,
+  lowerQuery: string,
+  intent: ReturnType<typeof parseIntent>,
+): number {
+  let score = 0;
+  const name = (skill.name || "").toLowerCase();
+  const desc = (skill.description || "").toLowerCase();
+  const tags = (skill.tags || []).map((t: any) => t.tag.toLowerCase());
+  const domain = (skill.domain || "").toLowerCase();
+
+  // Name match (highest signal)
+  const queryWords = lowerQuery.split(/\s+/).filter((w) => w.length > 2);
+  for (const word of queryWords) {
+    if (name.includes(word)) score += 5;
+    if (desc.includes(word)) score += 2;
+    if (tags.includes(word)) score += 3;
+  }
+
+  // Domain match
+  if (intent.inferredDomain && domain === intent.inferredDomain.toLowerCase()) {
+    score += 4;
+  }
+
+  // Tag overlap
+  for (const tag of intent.inferredTags) {
+    if (tags.includes(tag)) score += 3;
+  }
+
+  // Popularity signals (normalized)
+  score += Math.min(skill.installCount / 100, 3);
+  score += Math.min((skill._count?.upvotes || 0) / 10, 2);
+
+  return score;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,7 +266,7 @@ server.tool(
   },
   async ({ skill_id }) => {
     try {
-      const skill = await apiFetch(`/skills/${skill_id}`);
+      const skill = await apiFetch(`/skills/${encodeURIComponent(skill_id)}`);
       return {
         content: [{
           type: "text" as const,
@@ -235,6 +277,135 @@ server.tool(
       return { content: [{ type: "text" as const, text: `Error fetching skill: ${err.message}` }], isError: true };
     }
   },
+);
+
+// ---------------------------------------------------------------------------
+// Tool: install_skill — install a skill (requires auth)
+// ---------------------------------------------------------------------------
+server.tool(
+  "install_skill",
+  "Install a skill from SkillBrick AI. Requires an API token to be configured via SKILLBRICK_API_TOKEN. Returns the skill content/prompt text. If the user has insufficient credits, returns options for earning more.",
+  {
+    skillId: z.string().describe("The ID of the skill to install"),
+  },
+  async ({ skillId }) => {
+    try {
+      if (!API_TOKEN) {
+        return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for installing skills. Set it in your MCP server configuration.");
+      }
+      const data = await apiFetch(`/skills/${encodeURIComponent(skillId)}/install`, {
+        method: "POST",
+      });
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      const errMsg = (err as Error).message;
+      if (errMsg.includes("INSUFFICIENT_CREDITS") || errMsg.includes("Insufficient") || errMsg.includes("400")) {
+        try {
+          const jsonMatch = errMsg.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const errorData = JSON.parse(jsonMatch[0]);
+            if (errorData.error === "INSUFFICIENT_CREDITS") {
+              return textResult(
+                `INSUFFICIENT CREDITS\n\n` +
+                `The user has ${errorData.currentBalance} credits remaining but needs ${errorData.requiredCredits} to install this skill.\n\n` +
+                `Please inform the user of these options to get more credits:\n\n` +
+                `1. SUBMIT A SKILL (Free): The user can submit a skill to the SkillBrick AI platform and earn 10 download credits instantly. ` +
+                `You can help them do this right now using the "upload_skill" tool.\n\n` +
+                `2. SUBSCRIBE: The user can purchase a subscription for monthly credits:\n` +
+                `   - Starter ($5/mo): 50 downloads/month\n` +
+                `   - Pro ($15/mo): 200 downloads/month\n` +
+                `   - Unlimited ($30/mo): Unlimited downloads\n` +
+                `   Visit the SkillBrick AI pricing page to subscribe.\n\n` +
+                `Ask the user which option they'd prefer.`
+              );
+            }
+          }
+        } catch {
+          // Fall through to generic error
+        }
+        return textResult(
+          `INSUFFICIENT CREDITS\n\n` +
+          `The user does not have enough credits to install this skill.\n\n` +
+          `Please inform the user of these options:\n\n` +
+          `1. SUBMIT A SKILL (Free): Submit a skill to earn 10 download credits. Use the "upload_skill" tool to help them.\n\n` +
+          `2. SUBSCRIBE: Purchase a subscription starting at $5/month for 50 downloads.\n\n` +
+          `Use the "check_credits" tool to see their current balance.`
+        );
+      }
+      return textResult(`Error installing skill: ${errMsg}`);
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Tool: check_credits — check download credit balance
+// ---------------------------------------------------------------------------
+server.tool(
+  "check_credits",
+  "Check the authenticated user's current download credit balance and see options for earning or purchasing more credits. Use this before installing skills to verify the user has enough credits.",
+  {},
+  async () => {
+    try {
+      if (!API_TOKEN) {
+        return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+      }
+      const [balance, pricing] = await Promise.all([
+        apiFetch("/tokens/balance") as Promise<{ balance: number }>,
+        apiFetch("/tokens/pricing") as Promise<Record<string, unknown>>,
+      ]);
+      return textResult(JSON.stringify({
+        currentBalance: balance.balance,
+        costPerInstall: 1,
+        remainingInstalls: balance.balance,
+        ...(balance.balance <= 5 ? {
+          lowBalanceWarning: `Only ${balance.balance} install(s) remaining.`,
+          earnMore: {
+            submitSkill: "Submit a skill to earn 10 credits instantly. Use the upload_skill tool.",
+            subscribe: "Subscribe starting at $5/month for 50 downloads/month.",
+          },
+        } : {}),
+        pricing,
+      }, null, 2));
+    } catch (err) {
+      return textResult(`Error checking credits: ${(err as Error).message}`);
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Tool: list_collections — browse skill collections
+// ---------------------------------------------------------------------------
+server.tool(
+  "list_collections",
+  "Browse all skill collections on SkillBrick AI. Returns collections with names, descriptions, and skill counts.",
+  {},
+  async () => {
+    try {
+      const data = await apiFetch("/collections");
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      return textResult(`Error listing collections: ${(err as Error).message}`);
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Tool: get_collection — get a specific collection
+// ---------------------------------------------------------------------------
+server.tool(
+  "get_collection",
+  "Get a specific collection with all its skills. Returns the collection details and nested skill objects.",
+  {
+    collectionId: z.string().describe("The ID of the collection to retrieve"),
+  },
+  async ({ collectionId }) => {
+    try {
+      const data = await apiFetch(`/collections/${encodeURIComponent(collectionId)}`);
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      return textResult(`Error fetching collection: ${(err as Error).message}`);
+    }
+  }
 );
 
 // ---------------------------------------------------------------------------
@@ -355,42 +526,87 @@ server.tool(
   },
 );
 
-/** Score a skill's relevance to a query */
-function scoreSkill(
-  skill: any,
-  lowerQuery: string,
-  intent: ReturnType<typeof parseIntent>,
-): number {
-  let score = 0;
-  const name = (skill.name || "").toLowerCase();
-  const desc = (skill.description || "").toLowerCase();
-  const tags = (skill.tags || []).map((t: any) => t.tag.toLowerCase());
-  const domain = (skill.domain || "").toLowerCase();
-
-  // Name match (highest signal)
-  const queryWords = lowerQuery.split(/\s+/).filter((w) => w.length > 2);
-  for (const word of queryWords) {
-    if (name.includes(word)) score += 5;
-    if (desc.includes(word)) score += 2;
-    if (tags.includes(word)) score += 3;
+// ---------------------------------------------------------------------------
+// Tool: upload_skill — upsert a single skill (requires auth)
+// ---------------------------------------------------------------------------
+server.tool(
+  "upload_skill",
+  "Upload or update a skill on SkillBrick AI. If a skill with the same name already exists for your account, it will be updated only if the content has changed. Returns whether the skill was created, updated, or unchanged. Requires SKILLBRICK_API_TOKEN.",
+  {
+    name: z.string().describe("Skill name/title"),
+    description: z.string().describe("One-line description of what the skill does"),
+    content: z.string().describe("The full skill/prompt content"),
+    domain: z.string().describe("Skill domain/category (e.g. coding, writing, research)"),
+    tags: z.array(z.string()).optional().describe("Tags for discoverability"),
+    testedOn: z.array(z.string()).optional().describe("AI models this skill has been tested on"),
+  },
+  async (params) => {
+    try {
+      if (!API_TOKEN) {
+        return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for uploading skills. Set it in your MCP server configuration.");
+      }
+      const data = await apiFetch("/skills/upsert", {
+        method: "PUT",
+        body: JSON.stringify(params),
+      });
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      return textResult(`Error uploading skill: ${(err as Error).message}`);
+    }
   }
+);
 
-  // Domain match
-  if (intent.inferredDomain && domain === intent.inferredDomain.toLowerCase()) {
-    score += 4;
+// ---------------------------------------------------------------------------
+// Tool: sync_skills — bulk upsert (requires auth)
+// ---------------------------------------------------------------------------
+server.tool(
+  "sync_skills",
+  "Bulk-sync multiple skills to SkillBrick AI in one call. Each skill is created if new, updated if content changed, or skipped if unchanged. Returns a summary of what happened. Requires SKILLBRICK_API_TOKEN.",
+  {
+    skills: z.array(z.object({
+      name: z.string().describe("Skill name/title"),
+      description: z.string().describe("One-line description"),
+      content: z.string().describe("The full skill/prompt content"),
+      domain: z.string().describe("Skill domain/category"),
+      tags: z.array(z.string()).optional().describe("Tags for discoverability"),
+      testedOn: z.array(z.string()).optional().describe("AI models tested on"),
+    })).describe("Array of skills to sync"),
+  },
+  async ({ skills }) => {
+    try {
+      if (!API_TOKEN) {
+        return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for syncing skills. Set it in your MCP server configuration.");
+      }
+      const data = await apiFetch("/skills/bulk-sync", {
+        method: "PUT",
+        body: JSON.stringify({ skills }),
+      });
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      return textResult(`Error syncing skills: ${(err as Error).message}`);
+    }
   }
+);
 
-  // Tag overlap
-  for (const tag of intent.inferredTags) {
-    if (tags.includes(tag)) score += 3;
+// ---------------------------------------------------------------------------
+// Tool: my_skills — list authenticated user's skills (requires auth)
+// ---------------------------------------------------------------------------
+server.tool(
+  "my_skills",
+  "List all skills owned by the authenticated user, with version numbers and content hashes. Useful for checking what you've already uploaded. Requires SKILLBRICK_API_TOKEN.",
+  {},
+  async () => {
+    try {
+      if (!API_TOKEN) {
+        return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+      }
+      const data = await apiFetch("/skills/mine");
+      return textResult(JSON.stringify(data, null, 2));
+    } catch (err) {
+      return textResult(`Error listing your skills: ${(err as Error).message}`);
+    }
   }
-
-  // Popularity signals (normalized)
-  score += Math.min(skill.installCount / 100, 3);
-  score += Math.min((skill._count?.upvotes || 0) / 10, 2);
-
-  return score;
-}
+);
 
 // ---------------------------------------------------------------------------
 // Connect
@@ -402,6 +618,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Fatal:", err);
+  console.error("Fatal error starting MCP server:", err);
   process.exit(1);
 });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
@@ -64,6 +65,12 @@ export default function SubmitPage() {
 
   return (
     <div className={styles.page}>
+      <Helmet>
+        <title>Submit a Skill | SkillBrick AI</title>
+        <meta name="description" content="Share your knowledge with SkillBrick AI. Write a prompt that teaches AI to excel in a specific domain." />
+        <link rel="canonical" href="https://skillbrickai.com/submit" />
+      </Helmet>
+
       <SuccessCheckmark visible={showSuccess} label="Skill Submitted!" />
 
       <Button

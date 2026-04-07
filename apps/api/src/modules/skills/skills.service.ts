@@ -4,10 +4,23 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TokensService } from '../tokens/tokens.service';
 import { BadgesService } from '../badges/badges.service';
 import { UpvotesService } from '../upvotes/upvotes.service';
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function hashContent(content: string): string {
+  return createHash('sha256').update(content).digest('hex');
+}
 
 @Injectable()
 export class SkillsService {
@@ -98,11 +111,16 @@ export class SkillsService {
       sourceUrl?: string;
     },
   ) {
+    const slug = generateSlug(data.name);
+    const contentDigest = hashContent(data.content);
+
     const skill = await this.prisma.skill.create({
       data: {
         name: data.name,
+        slug,
         description: data.description,
         content: data.content,
+        contentHash: contentDigest,
         domain: data.domain,
         authorId: userId,
         originalAuthorName: data.originalAuthorName || null,
@@ -114,6 +132,13 @@ export class SkillsService {
         testedOn: data.testedOn
           ? { create: data.testedOn.map((model) => ({ model })) }
           : undefined,
+        versions: {
+          create: {
+            version: 1,
+            content: data.content,
+            contentHash: contentDigest,
+          },
+        },
       },
       include: {
         author: { select: { id: true, username: true, avatarUrl: true } },
@@ -186,9 +211,16 @@ export class SkillsService {
     }
 
     const updateData: any = {};
-    if (data.name !== undefined) updateData.name = data.name;
+    if (data.name !== undefined) {
+      updateData.name = data.name;
+      updateData.slug = generateSlug(data.name);
+    }
     if (data.description !== undefined) updateData.description = data.description;
-    if (data.content !== undefined) updateData.content = data.content;
+    if (data.content !== undefined) {
+      updateData.content = data.content;
+      updateData.contentHash = hashContent(data.content);
+      updateData.version = { increment: 1 };
+    }
     if (data.domain !== undefined) updateData.domain = data.domain;
 
     // Handle tags replacement
@@ -203,6 +235,19 @@ export class SkillsService {
       updateData.testedOn = {
         create: data.testedOn.map((model) => ({ model })),
       };
+    }
+
+    // Create version record if content changed
+    if (data.content !== undefined) {
+      const newVersion = skill.version + 1;
+      await this.prisma.skillVersion.create({
+        data: {
+          skillId: id,
+          version: newVersion,
+          content: data.content,
+          contentHash: hashContent(data.content),
+        },
+      });
     }
 
     return this.prisma.skill.update({
@@ -261,7 +306,27 @@ export class SkillsService {
     });
 
     if (!user || user.tokenBalance < 1) {
-      throw new BadRequestException('Insufficient tokens');
+      throw new BadRequestException({
+        error: 'INSUFFICIENT_CREDITS',
+        message: 'You have run out of download credits.',
+        currentBalance: user?.tokenBalance ?? 0,
+        requiredCredits: 1,
+        options: [
+          {
+            method: 'submit_skill',
+            description:
+              'Submit a skill to the SkillBrick AI platform to earn 10 download credits. Use the upload_skill MCP tool or visit the website to submit.',
+            creditsAwarded: 10,
+          },
+          {
+            method: 'subscription',
+            description:
+              'Subscribe to a SkillBrick AI plan for monthly download credits. Visit the pricing page for details.',
+            creditsAwarded: 'unlimited',
+            actionUrl: '/pricing',
+          },
+        ],
+      });
     }
 
     // Debit 1 token
@@ -335,5 +400,92 @@ export class SkillsService {
       skillId,
       skill.authorId,
     );
+  }
+
+  async upsert(
+    userId: string,
+    data: {
+      name: string;
+      description: string;
+      content: string;
+      domain: string;
+      tags?: string[];
+      testedOn?: string[];
+    },
+  ) {
+    const slug = generateSlug(data.name);
+    const contentDigest = hashContent(data.content);
+
+    const existing = await this.prisma.skill.findUnique({
+      where: { authorId_slug: { authorId: userId, slug } },
+    });
+
+    if (!existing) {
+      const skill = await this.create(userId, data);
+      return { action: 'created' as const, version: 1, skill };
+    }
+
+    if (existing.contentHash === contentDigest) {
+      const skill = await this.findOne(existing.id);
+      return { action: 'unchanged' as const, version: existing.version, skill };
+    }
+
+    const skill = await this.update(userId, existing.id, data);
+    return {
+      action: 'updated' as const,
+      version: existing.version + 1,
+      skill,
+    };
+  }
+
+  async bulkSync(
+    userId: string,
+    skills: Array<{
+      name: string;
+      description: string;
+      content: string;
+      domain: string;
+      tags?: string[];
+      testedOn?: string[];
+    }>,
+  ) {
+    const results = await Promise.all(
+      skills.map((skillData) => this.upsert(userId, skillData)),
+    );
+
+    const summary = {
+      created: results.filter((r) => r.action === 'created').length,
+      updated: results.filter((r) => r.action === 'updated').length,
+      unchanged: results.filter((r) => r.action === 'unchanged').length,
+      total: results.length,
+    };
+
+    return { summary, results };
+  }
+
+  async findByAuthor(userId: string) {
+    const skills = await this.prisma.skill.findMany({
+      where: { authorId: userId },
+      include: {
+        tags: true,
+        testedOn: true,
+        _count: { select: { upvotes: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    return skills.map((s) => ({
+      id: s.id,
+      name: s.name,
+      slug: s.slug,
+      version: s.version,
+      contentHash: s.contentHash,
+      domain: s.domain,
+      installCount: s.installCount,
+      updatedAt: s.updatedAt,
+      tags: s.tags.map((t) => t.tag),
+      testedOn: s.testedOn.map((t) => t.model),
+      upvoteCount: s._count.upvotes,
+    }));
   }
 }

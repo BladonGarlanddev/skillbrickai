@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Param,
@@ -89,6 +90,35 @@ export class UpdateSkillDto {
   testedOn?: string[];
 }
 
+export class UpsertSkillDto {
+  @IsString()
+  name: string;
+
+  @IsString()
+  description: string;
+
+  @IsString()
+  content: string;
+
+  @IsString()
+  domain: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  testedOn?: string[];
+}
+
+export class BulkSyncDto {
+  @IsArray()
+  skills: UpsertSkillDto[];
+}
+
 export class SkillQueryDto {
   @IsOptional()
   @IsString()
@@ -146,6 +176,40 @@ export class SkillsController {
     @Body() dto: CreateSkillDto,
   ) {
     return this.skillsService.create(userId, dto);
+  }
+
+  @Put('upsert')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Create or update a skill by name. Compares content hash — skips update if unchanged.',
+  })
+  async upsert(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpsertSkillDto,
+  ) {
+    return this.skillsService.upsert(userId, dto);
+  }
+
+  @Put('bulk-sync')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Sync multiple skills at once. Creates, updates, or skips each based on content hash.',
+  })
+  async bulkSync(
+    @CurrentUser('id') userId: string,
+    @Body() dto: BulkSyncDto,
+  ) {
+    return this.skillsService.bulkSync(userId, dto.skills);
+  }
+
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all skills owned by the authenticated user with version info' })
+  async mySkills(@CurrentUser('id') userId: string) {
+    return this.skillsService.findByAuthor(userId);
   }
 
   @Public()

@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HelmetProvider } from 'react-helmet-async';
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -27,11 +28,13 @@ function createWrapper({ route, useMemoryRouter }: WrapperOptions = {}) {
     const routerProps = useMemoryRouter && route ? { initialEntries: [route] } : {};
 
     return (
-      <QueryClientProvider client={queryClient}>
-        <Router {...routerProps}>
-          {children}
-        </Router>
-      </QueryClientProvider>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <Router {...routerProps}>
+            {children}
+          </Router>
+        </QueryClientProvider>
+      </HelmetProvider>
     );
   };
 }
