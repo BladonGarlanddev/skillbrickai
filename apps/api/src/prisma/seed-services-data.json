@@ -1,0 +1,19 @@
+[
+  {
+    "name": "CLAUDE.md Writing Service",
+    "slug": "claude-md-writing",
+    "description": "We write and maintain custom CLAUDE.md files for your repositories so Claude Code understands your codebase from day one.",
+    "longDescription": "Our team analyzes your repositories — architecture, conventions, tech stack, testing patterns, and team workflows — then writes production-ready CLAUDE.md files that make Claude Code work like a team member who's read every doc and PR.\n\nWhat you get:\n- Unlimited CLAUDE.md files across all your repos\n- Coverage of build commands, code conventions, architecture decisions, guardrails, and testing patterns\n- Subdirectory-scoped CLAUDE.md files for monorepos\n- Ongoing updates as your codebase evolves — request changes anytime\n- Cancel anytime, keep your files\n\nWhy pay for this?\n- The free CLAUDE.md Writer skill helps you write your own, but our service delivers expert-crafted results without you spending the time\n- We review your actual codebase, git history, and CI config to catch conventions you might not think to document\n- Especially valuable for large codebases, monorepos, or teams onboarding multiple developers onto Claude Code",
+    "price": 1000,
+    "currency": "usd",
+    "pricingType": "RECURRING_MONTHLY",
+    "category": "developer-tools",
+    "features": [
+      "Unlimited CLAUDE.md files across your repos",
+      "Full codebase analysis (architecture, conventions, stack)",
+      "Monorepo support with scoped CLAUDE.md files",
+      "Ongoing updates as your codebase evolves",
+      "Revision requests anytime"
+    ]
+  }
+]

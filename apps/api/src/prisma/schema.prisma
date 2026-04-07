@@ -17,20 +17,25 @@ model User {
   communityScore Int       @default(0)
   tokenBalance   Int       @default(0)
   isEarlyAdopter Boolean   @default(false)
+  isBanned       Boolean   @default(false)
+  banReason      String?
   githubId       String?   @unique
   googleId       String?   @unique
   createdAt      DateTime  @default(now())
 
-  skills         Skill[]   @relation("authoredSkills")
-  claimedSkills  Skill[]   @relation("claimedSkills")
-  badges         Badge[]
-  collections    Collection[]
-  upvotes        Upvote[]
-  tokenLedger    TokenTransaction[]
-  posts          Post[]
-  requests       SkillRequest[]
-  showcases      Showcase[]
-  suggestions    ImprovementSuggestion[]
+  skills          Skill[]   @relation("authoredSkills")
+  claimedSkills   Skill[]   @relation("claimedSkills")
+  research        Research[] @relation("authoredResearch")
+  claimedResearch Research[] @relation("claimedResearch")
+  badges          Badge[]
+  collections     Collection[]
+  upvotes         Upvote[]
+  tokenLedger     TokenTransaction[]
+  posts           Post[]
+  requests        SkillRequest[]
+  showcases       Showcase[]
+  suggestions     ImprovementSuggestion[]
+  serviceOrders   ServiceOrder[]
 }
 
 model Skill {
@@ -65,6 +70,71 @@ model Skill {
   versions     SkillVersion[]
 
   @@unique([authorId, slug])
+}
+
+model Research {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String
+  description    String
+  content        String   @db.Text
+  contentHash    String
+  domain         String
+  version        Int      @default(1)
+  authorId       String
+  referenceCount Int      @default(0)
+  methodology    String?  @db.Text
+  keyFindings    String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Attribution fields for externally sourced research
+  originalAuthorName String?
+  originalAuthorUrl  String?
+  sourceUrl          String?
+  claimedById        String?
+  claimedAt          DateTime?
+
+  author      User     @relation("authoredResearch", fields: [authorId], references: [id])
+  claimedBy   User?    @relation("claimedResearch", fields: [claimedById], references: [id])
+  tags        ResearchTag[]
+  sources     ResearchSource[]
+  collections CollectionResearch[]
+  versions    ResearchVersion[]
+
+  @@unique([authorId, slug])
+}
+
+model ResearchVersion {
+  id          String   @id @default(cuid())
+  researchId  String
+  version     Int
+  content     String   @db.Text
+  contentHash String
+  createdAt   DateTime @default(now())
+
+  research    Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  @@unique([researchId, version])
+}
+
+model ResearchTag {
+  researchId String
+  tag        String
+
+  research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  @@id([researchId, tag])
+}
+
+model ResearchSource {
+  id          String  @id @default(cuid())
+  researchId  String
+  title       String
+  url         String?
+  description String?
+
+  research    Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
 }
 
 model SkillVersion {
@@ -117,6 +187,7 @@ enum BadgeType {
   CURATOR
   HELPER
   VERIFIED_EXPERT
+  RESEARCHER
 }
 
 model TokenTransaction {
@@ -135,6 +206,7 @@ enum TokenTransactionType {
   SKILL_POSTED
   SKILL_INSTALLED
   ADMIN_GRANT
+  RESEARCH_POSTED
 }
 
 model Upvote {
@@ -155,6 +227,7 @@ enum UpvoteTarget {
   POST
   REPLY
   SHOWCASE
+  RESEARCH
 }
 
 model Collection {
@@ -164,8 +237,9 @@ model Collection {
   authorId    String
   createdAt   DateTime @default(now())
 
-  author      User     @relation(fields: [authorId], references: [id])
-  skills      CollectionSkill[]
+  author         User     @relation(fields: [authorId], references: [id])
+  skills         CollectionSkill[]
+  researchItems  CollectionResearch[]
 }
 
 model CollectionSkill {
@@ -177,6 +251,17 @@ model CollectionSkill {
   skill        Skill      @relation(fields: [skillId], references: [id])
 
   @@id([collectionId, skillId])
+}
+
+model CollectionResearch {
+  collectionId String
+  researchId   String
+  addedAt      DateTime @default(now())
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  research     Research   @relation(fields: [researchId], references: [id])
+
+  @@id([collectionId, researchId])
 }
 
 model Post {
@@ -266,4 +351,52 @@ enum SuggestionStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+model Service {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  slug        String        @unique
+  description String        @db.Text
+  longDescription String?   @db.Text
+  price       Int           // Price in cents (e.g., 4999 = $49.99)
+  currency    String        @default("usd")
+  pricingType ServicePricingType @default(ONE_TIME)
+  category    String
+  features    String[]
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  orders      ServiceOrder[]
+}
+
+model ServiceOrder {
+  id          String             @id @default(cuid())
+  serviceId   String
+  userId      String
+  status      ServiceOrderStatus @default(PENDING)
+  notes       String?            @db.Text
+  deliveryUrl String?
+  paidAmount  Int                // Amount paid in cents
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  service     Service            @relation(fields: [serviceId], references: [id])
+  user        User               @relation(fields: [userId], references: [id])
+}
+
+enum ServicePricingType {
+  ONE_TIME
+  RECURRING_MONTHLY
+  RECURRING_YEARLY
+}
+
+enum ServiceOrderStatus {
+  PENDING
+  PAID
+  IN_PROGRESS
+  DELIVERED
+  CANCELLED
+  REFUNDED
 }

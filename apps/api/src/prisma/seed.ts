@@ -37,27 +37,6 @@ function avatarUrl(username: string): string {
 }
 
 async function main() {
-  console.log('Wiping database...');
-
-  // Delete all data in dependency order
-  await prisma.showcaseSkill.deleteMany();
-  await prisma.showcase.deleteMany();
-  await prisma.skillRequestReply.deleteMany();
-  await prisma.skillRequest.deleteMany();
-  await prisma.post.deleteMany();
-  await prisma.collectionSkill.deleteMany();
-  await prisma.collection.deleteMany();
-  await prisma.improvementSuggestion.deleteMany();
-  await prisma.upvote.deleteMany();
-  await prisma.tokenTransaction.deleteMany();
-  await prisma.badge.deleteMany();
-  await prisma.skillTestedOn.deleteMany();
-  await prisma.skillTag.deleteMany();
-  await prisma.skill.deleteMany();
-  await prisma.user.deleteMany();
-
-  console.log('Database wiped.\n');
-
   // Load skill data
   const dataPath = path.join(__dirname, 'seed-skills-data.json');
   const skills: SkillData[] = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
@@ -73,11 +52,18 @@ async function main() {
     }
   }
 
-  // Create a User record for each GitHub author
-  console.log('Creating users from GitHub authors...');
+  // Create User records for each GitHub author (skip existing)
+  console.log('Ensuring users from GitHub authors...');
   const userIds = new Map<string, string>();
 
   for (const [username, info] of authorMap) {
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (existing) {
+      userIds.set(username, existing.id);
+      console.log(`  Exists: ${username}`);
+      continue;
+    }
+
     const user = await prisma.user.create({
       data: {
         email: `${username}@github-sourced.local`,
@@ -95,13 +81,22 @@ async function main() {
     console.log(`  Created user: ${username}${info.name ? ` (${info.name})` : ''}`);
   }
 
-  // Create skills
+  // Create skills (skip existing by name)
   console.log('\nCreating skills...');
   const baseDate = new Date('2026-01-10');
   let created = 0;
+  let skipped = 0;
 
   for (let i = 0; i < skills.length; i++) {
     const skill = skills[i];
+
+    const existingSkill = await prisma.skill.findFirst({ where: { name: skill.name } });
+    if (existingSkill) {
+      skipped++;
+      console.log(`  Skipping: "${skill.name}" (already exists)`);
+      continue;
+    }
+
     const authorId = userIds.get(skill.githubUsername)!;
 
     // Stagger creation dates (every 1-3 days)
@@ -141,8 +136,8 @@ async function main() {
   }
 
   console.log(`\nSeed complete!`);
-  console.log(`Created ${userIds.size} users and ${created} skills.`);
-  console.log(`All skills sourced from real GitHub repositories with proper attribution.`);
+  console.log(`Created ${created} skills, skipped ${skipped} existing.`);
+  console.log(`${userIds.size} users ensured.`);
 }
 
 main()

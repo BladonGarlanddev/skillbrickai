@@ -9,6 +9,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { IsEmail, IsString, MinLength } from 'class-validator';
@@ -41,6 +42,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new account' })
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto.email, dto.username, dto.password);
@@ -48,6 +50,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email and password' })
   async login(@Body() dto: LoginDto) {

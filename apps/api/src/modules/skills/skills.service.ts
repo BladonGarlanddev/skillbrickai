@@ -22,6 +22,64 @@ function hashContent(content: string): string {
   return createHash('sha256').update(content).digest('hex');
 }
 
+// ── Content safety patterns ──
+// These catch obvious prompt injection and adversarial instructions in skills.
+// Not a substitute for human review, but blocks the most common attack vectors.
+const CONTENT_SAFETY_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
+  {
+    pattern: /ignore\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions|prompts|rules)/i,
+    reason: 'Prompt injection: attempts to override prior instructions',
+  },
+  {
+    pattern: /disregard\s+(your|all|any)\s+(safety|guidelines|rules|instructions|guardrails)/i,
+    reason: 'Prompt injection: attempts to disable safety guidelines',
+  },
+  {
+    pattern: /you\s+are\s+now\s+(DAN|jailbroken|unrestricted|unfiltered)/i,
+    reason: 'Jailbreak attempt: tries to remove model safety constraints',
+  },
+  {
+    pattern: /exfiltrate|steal\s+(secrets?|tokens?|keys?|credentials?|env|passwords?)/i,
+    reason: 'Data exfiltration: instructs model to steal sensitive data',
+  },
+  {
+    pattern: /\b(curl|wget|fetch)\b.*(env|secret|token|password|key|credential)/i,
+    reason: 'Data exfiltration: instructs model to send sensitive data to external URLs',
+  },
+  {
+    pattern: /rm\s+-rf\s+[\/~]|drop\s+(table|database)|format\s+c:/i,
+    reason: 'Destructive action: instructs model to delete data or wipe systems',
+  },
+  {
+    pattern: /do\s+not\s+(tell|inform|alert|notify)\s+(the\s+)?user/i,
+    reason: 'Deception: instructs model to hide actions from the user',
+  },
+  {
+    pattern: /pretend\s+(you\s+are|to\s+be)\s+(a\s+)?(?!.*expert|.*assistant|.*engineer|.*writer)/i,
+    reason: 'Identity deception: instructs model to impersonate',
+  },
+  {
+    pattern: /bypass\s+(content\s+)?filter|avoid\s+(safety|content)\s+(check|filter|policy)/i,
+    reason: 'Safety bypass: attempts to circumvent content filters',
+  },
+  {
+    pattern: /\bsystem\s*:\s*you\s+are/i,
+    reason: 'Prompt injection: embeds a fake system prompt within skill content',
+  },
+];
+
+function checkContentSafety(content: string): string | null {
+  for (const { pattern, reason } of CONTENT_SAFETY_PATTERNS) {
+    if (pattern.test(content)) {
+      return reason;
+    }
+  }
+  return null;
+}
+
+// Minimum content length to prevent empty/trivial skills
+const MIN_CONTENT_LENGTH = 50;
+
 @Injectable()
 export class SkillsService {
   constructor(
@@ -40,7 +98,7 @@ export class SkillsService {
     limit?: number;
   }) {
     const page = query.page || 1;
-    const limit = query.limit || 20;
+    const limit = Math.min(query.limit || 20, 100);
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -111,8 +169,44 @@ export class SkillsService {
       sourceUrl?: string;
     },
   ) {
-    const slug = generateSlug(data.name);
+    // ── Content quality gate ──
+    if (data.content.trim().length < MIN_CONTENT_LENGTH) {
+      throw new BadRequestException(
+        `Skill content must be at least ${MIN_CONTENT_LENGTH} characters. Provide meaningful instructions.`,
+      );
+    }
+
+    // ── Content safety scan — violation = immediate ban ──
+    const safetyViolation = checkContentSafety(data.content);
+    if (safetyViolation) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isBanned: true,
+          banReason: `Automated ban: published skill content triggered safety check — ${safetyViolation}`,
+        },
+      });
+      throw new ForbiddenException({
+        error: 'ACCOUNT_BANNED',
+        message:
+          'Your account has been banned for publishing content that violates our Terms of Service. Contact abuse@skillbrickai.com if you believe this is an error.',
+      });
+    }
+
+    // ── Duplicate content detection ──
     const contentDigest = hashContent(data.content);
+    const duplicateSkill = await this.prisma.skill.findFirst({
+      where: { contentHash: contentDigest },
+      select: { id: true, name: true },
+    });
+    if (duplicateSkill) {
+      throw new BadRequestException({
+        error: 'DUPLICATE_CONTENT',
+        message: `A skill with identical content already exists: "${duplicateSkill.name}". Please create original content.`,
+      });
+    }
+
+    const slug = generateSlug(data.name);
 
     const skill = await this.prisma.skill.create({
       data: {
@@ -208,6 +302,30 @@ export class SkillsService {
 
     if (skill.authorId !== userId) {
       throw new ForbiddenException('You can only update your own skills');
+    }
+
+    // ── Content safety scan on update ──
+    if (data.content !== undefined) {
+      if (data.content.trim().length < MIN_CONTENT_LENGTH) {
+        throw new BadRequestException(
+          `Skill content must be at least ${MIN_CONTENT_LENGTH} characters.`,
+        );
+      }
+      const safetyViolation = checkContentSafety(data.content);
+      if (safetyViolation) {
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: {
+            isBanned: true,
+            banReason: `Automated ban: updated skill content triggered safety check — ${safetyViolation}`,
+          },
+        });
+        throw new ForbiddenException({
+          error: 'ACCOUNT_BANNED',
+          message:
+            'Your account has been banned for publishing content that violates our Terms of Service. Contact abuse@skillbrickai.com if you believe this is an error.',
+        });
+      }
     }
 
     const updateData: any = {};

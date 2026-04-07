@@ -13,8 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
-import { SkillsService } from './skills.service';
+import { ResearchService } from './research.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -24,152 +23,159 @@ import {
   IsArray,
   IsInt,
   Min,
-  Max,
-  MaxLength,
-  ArrayMaxSize,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateSkillDto {
+class ResearchSourceDto {
   @IsString()
-  @MaxLength(200)
+  title: string;
+
+  @IsOptional()
+  @IsString()
+  url?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+export class CreateResearchDto {
+  @IsString()
   name: string;
 
   @IsString()
-  @MaxLength(500)
   description: string;
 
   @IsString()
-  @MaxLength(15000)
   content: string;
 
   @IsString()
-  @MaxLength(100)
   domain: string;
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(20)
   @IsString({ each: true })
-  @MaxLength(50, { each: true })
   tags?: string[];
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(10)
-  @IsString({ each: true })
-  @MaxLength(50, { each: true })
-  testedOn?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ResearchSourceDto)
+  sources?: ResearchSourceDto[];
 
   @IsOptional()
   @IsString()
-  @MaxLength(200)
+  methodology?: string;
+
+  @IsOptional()
+  @IsString()
+  keyFindings?: string;
+
+  @IsOptional()
+  @IsString()
   originalAuthorName?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
   originalAuthorUrl?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
   sourceUrl?: string;
 }
 
-export class UpdateSkillDto {
+export class UpdateResearchDto {
   @IsOptional()
   @IsString()
-  @MaxLength(200)
   name?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(500)
   description?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(15000)
   content?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   domain?: string;
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(20)
   @IsString({ each: true })
-  @MaxLength(50, { each: true })
   tags?: string[];
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(10)
-  @IsString({ each: true })
-  @MaxLength(50, { each: true })
-  testedOn?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ResearchSourceDto)
+  sources?: ResearchSourceDto[];
+
+  @IsOptional()
+  @IsString()
+  methodology?: string;
+
+  @IsOptional()
+  @IsString()
+  keyFindings?: string;
 }
 
-export class UpsertSkillDto {
+export class UpsertResearchDto {
   @IsString()
-  @MaxLength(200)
   name: string;
 
   @IsString()
-  @MaxLength(500)
   description: string;
 
   @IsString()
-  @MaxLength(15000)
   content: string;
 
   @IsString()
-  @MaxLength(100)
   domain: string;
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(20)
   @IsString({ each: true })
-  @MaxLength(50, { each: true })
   tags?: string[];
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(10)
-  @IsString({ each: true })
-  @MaxLength(50, { each: true })
-  testedOn?: string[];
-}
+  @ValidateNested({ each: true })
+  @Type(() => ResearchSourceDto)
+  sources?: ResearchSourceDto[];
 
-export class BulkSyncDto {
-  @IsArray()
-  @ArrayMaxSize(25)
-  skills: UpsertSkillDto[];
-}
-
-export class SkillQueryDto {
   @IsOptional()
   @IsString()
-  @MaxLength(200)
+  methodology?: string;
+
+  @IsOptional()
+  @IsString()
+  keyFindings?: string;
+}
+
+export class BulkSyncResearchDto {
+  @IsArray()
+  research: UpsertResearchDto[];
+}
+
+export class ResearchQueryDto {
+  @IsOptional()
+  @IsString()
   search?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   domain?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(50)
   tag?: string;
 
   @IsOptional()
   @IsString()
-  sortBy?: 'newest' | 'popular' | 'installs';
+  sortBy?: 'newest' | 'popular' | 'references';
 
   @IsOptional()
   @Type(() => Number)
@@ -181,141 +187,136 @@ export class SkillQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(100)
   limit?: number = 20;
 }
 
-@ApiTags('skills')
-@Controller('skills')
-export class SkillsController {
-  constructor(private readonly skillsService: SkillsService) {}
+@ApiTags('research')
+@Controller('research')
+export class ResearchController {
+  constructor(private readonly researchService: ResearchService) {}
 
   @Public()
   @Get()
-  @ApiOperation({ summary: 'Search, filter, and paginate skills' })
+  @ApiOperation({ summary: 'Search, filter, and paginate research' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'domain', required: false })
   @ApiQuery({ name: 'tag', required: false })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['newest', 'popular', 'installs'] })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['newest', 'popular', 'references'] })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async findAll(@Query() query: SkillQueryDto) {
-    return this.skillsService.findAll(query);
+  async findAll(@Query() query: ResearchQueryDto) {
+    return this.researchService.findAll(query);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @Throttle({ short: { limit: 10, ttl: 60000 } })
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new skill' })
+  @ApiOperation({ summary: 'Create new research' })
   async create(
     @CurrentUser('id') userId: string,
-    @Body() dto: CreateSkillDto,
+    @Body() dto: CreateResearchDto,
   ) {
-    return this.skillsService.create(userId, dto);
+    return this.researchService.create(userId, dto);
   }
 
   @Put('upsert')
   @UseGuards(JwtAuthGuard)
-  @Throttle({ short: { limit: 10, ttl: 60000 } })
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Create or update a skill by name. Compares content hash — skips update if unchanged.',
+    summary: 'Create or update research by name. Compares content hash — skips update if unchanged.',
   })
   async upsert(
     @CurrentUser('id') userId: string,
-    @Body() dto: UpsertSkillDto,
+    @Body() dto: UpsertResearchDto,
   ) {
-    return this.skillsService.upsert(userId, dto);
+    return this.researchService.upsert(userId, dto);
   }
 
   @Put('bulk-sync')
   @UseGuards(JwtAuthGuard)
-  @Throttle({ short: { limit: 3, ttl: 60000 } })
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Sync multiple skills at once. Creates, updates, or skips each based on content hash.',
+    summary: 'Sync multiple research items at once. Creates, updates, or skips each based on content hash.',
   })
   async bulkSync(
     @CurrentUser('id') userId: string,
-    @Body() dto: BulkSyncDto,
+    @Body() dto: BulkSyncResearchDto,
   ) {
-    return this.skillsService.bulkSync(userId, dto.skills);
+    return this.researchService.bulkSync(userId, dto.research);
   }
 
   @Get('mine')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List all skills owned by the authenticated user with version info' })
-  async mySkills(@CurrentUser('id') userId: string) {
-    return this.skillsService.findByAuthor(userId);
+  @ApiOperation({ summary: 'List all research owned by the authenticated user' })
+  async myResearch(@CurrentUser('id') userId: string) {
+    return this.researchService.findByAuthor(userId);
   }
 
   @Public()
   @Get(':id')
-  @ApiOperation({ summary: 'Get skill detail' })
+  @ApiOperation({ summary: 'Get research detail' })
   async findOne(@Param('id') id: string) {
-    return this.skillsService.findOne(id);
+    return this.researchService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a skill (owner only)' })
+  @ApiOperation({ summary: 'Update research (owner only)' })
   async update(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
-    @Body() dto: UpdateSkillDto,
+    @Body() dto: UpdateResearchDto,
   ) {
-    return this.skillsService.update(userId, id, dto);
+    return this.researchService.update(userId, id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete a skill (owner only)' })
+  @ApiOperation({ summary: 'Delete research (owner only)' })
   async remove(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
   ) {
-    return this.skillsService.remove(userId, id);
+    return this.researchService.remove(userId, id);
   }
 
-  @Post(':id/install')
+  @Post(':id/reference')
   @UseGuards(JwtAuthGuard)
-  @Throttle({ short: { limit: 30, ttl: 60000 } })
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Install a skill (costs 1 token)' })
-  async install(
+  @ApiOperation({ summary: 'Save a reference to this research (free)' })
+  async reference(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
   ) {
-    return this.skillsService.install(userId, id);
+    return this.researchService.reference(userId, id);
   }
 
   @Post(':id/upvote')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Toggle upvote on a skill' })
+  @ApiOperation({ summary: 'Toggle upvote on research' })
   async upvote(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
   ) {
-    return this.skillsService.toggleUpvote(userId, id);
+    return this.researchService.toggleUpvote(userId, id);
   }
 
   @Post(':id/claim')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Claim an attributed skill as original author' })
+  @ApiOperation({ summary: 'Claim attributed research as original author' })
   async claim(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
   ) {
-    return this.skillsService.claimSkill(userId, id);
+    return this.researchService.claimResearch(userId, id);
   }
 }
