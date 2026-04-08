@@ -1,0 +1,29 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/collective
+            git pull origin main
+            pnpm install --frozen-lockfile
+            cd apps/api
+            npx prisma generate --schema=src/prisma/schema.prisma
+            pnpm build
+            pm2 restart skillbrick-api
+            pm2 save
