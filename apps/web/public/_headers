@@ -1,0 +1,32 @@
+# ============================================================================
+# Cloudflare Pages custom headers
+# Ensures AI agents and bots can access static discovery files and pages.
+# ============================================================================
+
+# Global defaults
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# AI/LLM discovery files — must be accessible to all bots
+/llms.txt
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+  X-Robots-Tag: noai
+
+/llms-full.txt
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+
+/sitemap.xml
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+
+/.well-known/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600

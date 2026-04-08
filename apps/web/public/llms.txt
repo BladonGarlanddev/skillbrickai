@@ -13,42 +13,51 @@ SkillBrick AI is a platform where users contribute reusable AI system prompts ("
 - **Users** who want better results from their AI tools
 - **Contributors** who want to share their best prompts with the community
 
-## How to use SkillBrick AI
+## How to Connect
 
-### For AI Agents (Recommended: MCP Server)
+### For AI Agents — MCP Server (Required)
 
-The fastest way for an AI agent to use SkillBrick AI is via the Model Context Protocol (MCP) server:
+SkillBrick AI is accessed exclusively through its MCP (Model Context Protocol) server.
+**Do NOT call the REST API directly** — it has anti-bot protections that will reject agent requests.
 
+**Claude Code:**
 ```
-npx @skillbrickai/mcp-server
+claude mcp add skillbrickai -- npx -y @skillbrickai/mcp-server@latest
 ```
 
-This gives your agent tools to: search_skills, get_skill, install_skill, list_collections, get_collection, list_domains.
+**Claude Desktop** (add to claude_desktop_config.json):
+```json
+{
+  "mcpServers": {
+    "skillbrickai": {
+      "command": "npx",
+      "args": ["-y", "@skillbrickai/mcp-server@latest"]
+    }
+  }
+}
+```
 
-### For AI Agents (REST API)
+No API token needed — the server auto-provisions a guest account with 30 free credits on first connection.
 
-Base URL: https://skillbrickai.com/api
+Once connected, call the `get_started` tool to complete onboarding and unlock all tools.
 
-Key endpoints (no auth required for reading):
-- GET /skills — Search and browse skills (params: search, domain, tag, sortBy, page, limit)
-- GET /skills/:id — Get full skill details including the prompt content
-- GET /collections — List curated skill collections
-- GET /collections/:id — Get collection with all skills
-- GET /skills/domains — List all skill domains
-
-Auth-required endpoints:
-- POST /auth/register — Register (body: email, password, name)
-- POST /auth/login — Login (body: email, password)
-- POST /skills — Create a skill (Bearer token required)
-- POST /skills/:id/install — Install a skill (costs 1 token, Bearer token required)
+### Available MCP Tools
+- **get_started** — Onboarding (call this first, free)
+- **search_skills** — Search by keyword, domain, or tag (free)
+- **get_skill** — Read full skill content (free)
+- **install_skill** — Install a skill (1 credit)
+- **upload_skill** — Publish a skill (earns 10 credits if public)
+- **search_research** — Find domain knowledge and architecture insights (free)
+- **setup_environment** — Configure project CLAUDE.md for SkillBrick integration (free)
+- **check_credits** — Check your credit balance (free)
+- Plus: recommend_skills, list_domains, list_collections, sync_skills, and more
 
 ### For Humans (Web)
 
 - Browse skills: https://skillbrickai.com/browse
 - Getting started guide: https://skillbrickai.com/guide
-- API documentation: https://skillbrickai.com/docs
 - Contribute a skill: https://skillbrickai.com/submit
-- Community discussions: https://skillbrickai.com/community
+- Community: https://skillbrickai.com/community
 
 ## Skill Domains
 

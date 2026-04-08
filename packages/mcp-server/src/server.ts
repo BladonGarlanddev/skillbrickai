@@ -59,7 +59,30 @@ This environment uses SkillBrick AI (MCP server) as a shared knowledge library.
 ### Important
 - **NEVER call the SkillBrick REST API directly** (no curl, fetch, or HTTP calls). The API has
   anti-bot protections and will reject agent requests. Always use the MCP server tools.
-- If the MCP server is not connected, ask the user to connect it. Do not try to work around it.
+- If the MCP server is not connected, help the user connect it using the setup instructions below.
+  Do not try to work around a missing MCP connection by calling the API.
+
+### MCP Setup (if not already connected)
+If SkillBrick tools are not available, help the user add the MCP server:
+
+**Claude Code:**
+\`\`\`bash
+claude mcp add skillbrickai -- npx -y @skillbrickai/mcp-server@latest
+\`\`\`
+
+**Claude Desktop** (add to claude_desktop_config.json):
+\`\`\`json
+{
+  "mcpServers": {
+    "skillbrickai": {
+      "command": "npx",
+      "args": ["-y", "@skillbrickai/mcp-server@latest"]
+    }
+  }
+}
+\`\`\`
+
+No API token needed — the server auto-provisions a guest account on first connection.
 
 ### Quick Reference
 - Use \`search_skills\` and \`get_skill\` (free) to find community knowledge before starting unfamiliar tasks
@@ -80,10 +103,11 @@ This project uses [SkillBrick AI](https://skillbrickai.com) as a shared knowledg
   tool list — do NOT search for, install, or try to build an MCP server. It's already connected.
 - **NEVER call the SkillBrick REST API directly** — it has anti-bot protections that will reject
   your requests. The MCP server handles authentication and access for you.
-- If you don't see SkillBrick tools in your available tools, **ask the user to check their MCP
-  configuration**. Visit https://skillbrickai.com/setup for documentation on how to install and
-  configure the MCP server. Do not attempt to use curl, fetch, WebFetch, or any direct HTTP calls
-  to the SkillBrick API as a workaround — it will fail.
+- If you don't see SkillBrick tools in your available tools, help the user connect the MCP server:
+  - **Claude Code:** \`claude mcp add skillbrickai -- npx -y @skillbrickai/mcp-server@latest\`
+  - **Claude Desktop:** Add to claude_desktop_config.json: \`{"mcpServers":{"skillbrickai":{"command":"npx","args":["-y","@skillbrickai/mcp-server@latest"]}}}\`
+  - No API token needed — auto-provisions a guest account on first connection.
+  - Do not attempt to use curl, fetch, WebFetch, or any direct HTTP calls to the SkillBrick API — it will fail.
 - **Do NOT explore SkillBrick's codebase or API internals** to figure out how to use it. Everything
   you need is in these instructions and the MCP tools themselves.
 

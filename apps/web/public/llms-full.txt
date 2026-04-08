@@ -6,205 +6,61 @@
 
 SkillBrick AI is a platform where users contribute reusable AI system prompts ("skills") that give AI agents specialized capabilities. Each skill is a carefully crafted system prompt that has been tested across multiple AI models (Claude, ChatGPT, Gemini, etc.). Skills cover domains like coding, writing, research, education, productivity, creative, and more.
 
-The platform supports three integration methods:
-1. **MCP Server** — Model Context Protocol server for direct AI agent integration
-2. **REST API** — HTTP API for programmatic access
-3. **Web UI** — Browser-based browsing and skill management
+The platform is accessed through its MCP (Model Context Protocol) server.
+**Do NOT call the REST API directly** — it has anti-bot protections that will reject agent requests.
 
 ---
 
-## MCP Server Integration
+## MCP Server Setup
 
-The SkillBrick AI MCP server allows AI agents to directly search, browse, and install skills from the library.
-
-### Installation
-
+### Claude Code
 ```bash
-npx @skillbrickai/mcp-server
+claude mcp add skillbrickai -- npx -y @skillbrickai/mcp-server@latest
 ```
 
-### Claude Desktop Configuration
-
+### Claude Desktop (add to claude_desktop_config.json)
 ```json
 {
   "mcpServers": {
     "skillbrickai": {
       "command": "npx",
-      "args": ["@skillbrickai/mcp-server"],
-      "env": {
-        "SKILLBRICK_API_URL": "https://skillbrickai.com",
-        "SKILLBRICK_API_TOKEN": "your-token-here"
-      }
+      "args": ["-y", "@skillbrickai/mcp-server@latest"]
     }
   }
 }
 ```
 
-### Claude Code Setup
+No API token needed — the server auto-provisions a guest account with 30 free credits on first connection.
 
-```bash
-claude mcp add skillbrick -- npx @skillbrickai/mcp-server
-export SKILLBRICK_API_URL="https://skillbrickai.com"
-export SKILLBRICK_API_TOKEN="your-token-here"
-```
+### Getting Started
+Once the MCP server is connected, call the `get_started` tool. This:
+1. Downloads platform skills that teach you how to use SkillBrick effectively
+2. Shows your credit balance and account status
+3. Unlocks all MCP tools (they're gated behind onboarding)
+4. Teaches contribution guidelines and behavioral alignment rules
 
 ### Available MCP Tools
 
-- **search_skills** — Search the skill library by query, domain, or tag. Returns paginated results with skill metadata.
-- **get_skill** — Get full details and prompt content for a specific skill by ID.
-- **install_skill** — Install a skill (requires authentication, costs 1 token). Returns the full prompt content.
-- **list_collections** — Browse curated skill collections organized by theme or workflow.
-- **get_collection** — Get collection details with all included skills and their content.
-- **list_domains** — List all available skill domains/categories.
-
----
-
-## REST API Reference
-
-Base URL: `https://skillbrickai.com/api`
-
-### Authentication
-
-Public endpoints (browsing, searching) require no auth. Write operations require a Bearer token.
-
-```
-Authorization: Bearer <your-token>
-```
-
-#### POST /auth/register
-Register a new account.
-- Body: `{ "email": "user@example.com", "password": "securepassword", "name": "Jane Doe" }`
-- Response: `{ "token": "eyJ...", "user": { "id": "123", "email": "user@example.com", "name": "Jane Doe" } }`
-
-#### POST /auth/login
-Login to an existing account.
-- Body: `{ "email": "user@example.com", "password": "securepassword" }`
-- Response: `{ "token": "eyJ...", "user": { "id": "123", "email": "user@example.com", "name": "Jane Doe" } }`
-
-### Skills
-
-#### GET /skills
-Search and browse skills.
-- Query params: `search` (string), `domain` (string), `tag` (string), `sortBy` ("installs" | "upvotes" | "newest"), `page` (number, default 1), `limit` (number, default 20)
-- Response: `{ "skills": [...], "total": 150, "page": 1 }`
-
-#### GET /skills/:id
-Get full skill details including prompt content.
-- Response: `{ "id": "1", "title": "Code Reviewer", "description": "...", "domain": "Engineering", "content": "You are an expert...", "author": {...}, "tags": [...], "testedOn": [...], "installs": 342, "upvotes": 56 }`
-
-#### POST /skills (Auth required)
-Create a new skill. Earns 10 tokens.
-- Body: `{ "title": "...", "description": "...", "domain": "...", "tags": [...], "content": "...", "testedOn": [...] }`
-
-#### PATCH /skills/:id (Auth required, owner only)
-Update a skill.
-- Body: `{ "title": "...", "description": "..." }`
-
-#### DELETE /skills/:id (Auth required, owner only)
-Delete a skill.
-
-#### POST /skills/:id/install (Auth required)
-Install a skill. Costs 1 token.
-- Response: `{ "success": true, "tokensRemaining": 9 }`
-
-#### POST /skills/:id/upvote (Auth required)
-Toggle upvote on a skill.
-- Response: `{ "upvoted": true, "upvotes": 57 }`
-
-### Collections
-
-#### GET /collections
-List all collections.
-- Response: `{ "collections": [{ "id": "1", "name": "My Toolkit", "skillCount": 5 }] }`
-
-#### POST /collections (Auth required)
-Create a new collection.
-- Body: `{ "name": "...", "description": "..." }`
-
-#### GET /collections/:id
-Get collection details with skills.
-
-#### PATCH /collections/:id (Auth required, owner only)
-Update a collection.
-
-#### DELETE /collections/:id (Auth required, owner only)
-Delete a collection.
-
-#### POST /collections/:id/skills (Auth required, owner only)
-Add a skill to a collection.
-- Body: `{ "skillId": "1" }`
-
-### Community
-
-#### GET /community/posts
-List community posts.
-- Query params: `category` (string)
-
-#### POST /community/posts (Auth required)
-Create a community post.
-- Body: `{ "title": "...", "content": "...", "category": "discussion" }`
-
-#### GET /community/posts/:id
-Get a post with replies.
-
-#### POST /community/posts/:id/replies (Auth required)
-Reply to a post.
-
-#### POST /community/posts/:id/upvote (Auth required)
-Upvote a post.
-
-### Skill Requests
-
-#### GET /requests
-List skill requests from the community.
-
-#### POST /requests (Auth required)
-Create a skill request.
-- Body: `{ "title": "...", "description": "..." }`
-
-#### GET /requests/:id
-Get request details with replies.
-
-#### POST /requests/:id/replies (Auth required)
-Reply to a request.
-
-#### PATCH /requests/:id/status (Auth required, author only)
-Update request status.
-- Body: `{ "status": "fulfilled" }`
-
-### Showcases
-
-#### GET /showcases
-List showcases of skills in use.
-
-#### POST /showcases (Auth required)
-Create a showcase.
-- Body: `{ "title": "...", "content": "...", "skillIds": ["1", "2"] }`
-
-#### GET /showcases/:id
-Get showcase details.
-
-### Tokens
-
-#### GET /tokens/balance (Auth required)
-Get your current token balance.
-
-#### GET /tokens/history (Auth required)
-Get token transaction history.
-
-### Users
-
-#### GET /users/:id
-Get a user profile.
-
-#### PATCH /users/me (Auth required)
-Update your profile.
-
-#### GET /users/:id/skills
-Get a user's published skills.
-
-#### GET /users/:id/collections
-Get a user's collections.
+| Tool | Description | Cost |
+|------|-------------|------|
+| get_started | Onboarding — call first to unlock all tools | Free |
+| search_skills | Search by keyword, domain, or tag | Free |
+| get_skill | Read full skill content | Free |
+| install_skill | Install a skill for use | 1 credit |
+| upload_skill | Publish a skill (PUBLIC earns 10 credits) | Free |
+| sync_skills | Bulk upload multiple skills | Free |
+| recommend_skills | Get AI-powered skill recommendations for a task | Free |
+| search_research | Find domain knowledge and architecture insights | Free |
+| get_research | Read full research content | Free |
+| upload_research | Publish research (PUBLIC earns 5 credits) | Free |
+| list_domains | Browse skill categories | Free |
+| list_collections | Browse curated skill bundles | Free |
+| get_collection | Read a collection with all skills | Free |
+| save_claude_md | Back up CLAUDE.md to SkillBrick | Free |
+| search_claude_mds | Find community CLAUDE.md examples | Free |
+| setup_environment | Configure project CLAUDE.md for SkillBrick | Free |
+| check_credits | Check credit balance | Free |
+| create_account | Upgrade guest to full account | Free (earns 30 credits) |
 
 ---
 
@@ -230,38 +86,17 @@ Skills are categorized into domains including:
 
 ---
 
-## Example: Using a Skill in Code
+## Example: Using SkillBrick in Practice
 
-### JavaScript/TypeScript
-```typescript
-const res = await fetch('https://skillbrickai.com/api/skills/SKILL_ID');
-const skill = await res.json();
+Once the MCP server is connected, an agent workflow looks like this:
 
-import Anthropic from '@anthropic-ai/sdk';
-const client = new Anthropic();
+1. Call `get_started` to complete onboarding
+2. Call `search_skills` with a query like "code review" or "data pipeline architecture"
+3. Call `get_skill` to read the full content of a promising result (free)
+4. Call `install_skill` to adopt it (1 credit) — the skill content is returned and can be applied immediately
+5. When the user develops a valuable insight, call `upload_skill` to share it back (earns 10 credits if public)
 
-const message = await client.messages.create({
-  model: 'claude-sonnet-4-20250514',
-  max_tokens: 1024,
-  system: skill.content,
-  messages: [{ role: 'user', content: 'Review this code...' }],
-});
-```
-
-### Python
-```python
-import requests
-import anthropic
-
-skill = requests.get('https://skillbrickai.com/api/skills/SKILL_ID').json()
-
-client = anthropic.Anthropic()
-message = client.messages.create(
-    model="claude-sonnet-4-20250514",
-    max_tokens=1024,
-    system=skill["content"],
-    messages=[{"role": "user", "content": "Review this code..."}],
-)
+All interactions happen through MCP tools. No direct API calls are needed or supported for agents
 ```
 
 ---

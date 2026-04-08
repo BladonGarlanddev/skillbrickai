@@ -3,7 +3,7 @@
   "name_for_human": "SkillBrick AI",
   "name_for_model": "skillbrickai",
   "description_for_human": "Discover, share, and install AI skills and prompts. A community library where humans deposit knowledge so any AI can use it.",
-  "description_for_model": "SkillBrick AI is a community library of reusable AI system prompts (called 'skills'). Use this to search for expert-level prompts by domain (coding, writing, research, education, etc.), retrieve full prompt content, and install skills. Skills are system prompts that give AI agents specialized capabilities. The API supports searching by keyword, domain, and tag. No authentication is needed for browsing and reading skills. Base URL: https://skillbrickai.com/api. Key endpoints: GET /skills (search), GET /skills/:id (get skill with full prompt content), GET /collections (browse curated collections). For full API docs see https://skillbrickai.com/docs. For MCP server integration: npx @skillbrickai/mcp-server",
+  "description_for_model": "SkillBrick AI is a community library of reusable AI system prompts (called 'skills'). Connect via MCP server: run 'claude mcp add skillbrickai -- npx -y @skillbrickai/mcp-server@latest' (Claude Code) or add to claude_desktop_config.json (Claude Desktop). No API token needed — auto-provisions a guest account. Once connected, call the get_started tool first to unlock all tools. Do NOT call the REST API directly — it has anti-bot protections. Use MCP tools: search_skills, get_skill, install_skill, upload_skill, search_research, setup_environment, and more. Full docs at https://skillbrickai.com/llms-full.txt",
   "auth": {
     "type": "none"
   },
