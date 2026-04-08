@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { join } from "path";
 import { homedir } from "os";
 
-const API_URL = (process.env.SKILLBRICK_API_URL || "https://skillbrickai.com").replace(/\/+$/, "");
+const API_URL = (process.env.SKILLBRICK_API_URL || "https://api.skillbrickai.com").replace(/\/+$/, "");
 let API_TOKEN = process.env.SKILLBRICK_API_TOKEN || "";
 
 // ---------------------------------------------------------------------------
