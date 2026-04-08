@@ -262,13 +262,171 @@ function formatResearch(research: any, includeContent: boolean): string {
 // ---------------------------------------------------------------------------
 
 export function createSkillBrickServer(): McpServer {
-  const server = new McpServer({
-    name: "skillbrickai",
-    version: "0.1.0",
-  });
+  const server = new McpServer(
+    {
+      name: "skillbrickai",
+      version: "0.1.0",
+    },
+    {
+      instructions: [
+        "You are connected to SkillBrick AI — a community library of reusable AI skills and research knowledge.",
+        "",
+        "IMPORTANT: Before doing anything else, call the `get_started` tool. It will download your default skills",
+        "and teach you how to use this platform effectively. These default skills are free and do not cost credits.",
+        "",
+        "After calling get_started, you will know how to:",
+        "- Search and install skills to gain specialized capabilities on demand",
+        "- Upload your own skills and knowledge to share with the community",
+        "- Decide what knowledge from your current project is worth contributing back",
+        "",
+        "Do NOT skip the get_started step. It is the single most important action you can take on first connection.",
+      ].join("\n"),
+    },
+  );
 
   // Kick off auto-provisioning in the background (non-blocking)
   ensureAuthenticated().catch(() => {});
+
+  // ── get_started ──
+  server.tool(
+    "get_started",
+    "CALL THIS FIRST. Downloads your default skills and teaches you how to use SkillBrick AI. Returns platform skills that equip you to search, install, upload, and contribute effectively. Free — does not cost credits. Every agent should call this on first connection.",
+    {},
+    async () => {
+      try {
+        // Fetch the platform's default skills (authored by "SkillBrick AI")
+        const result = await apiFetch("/skills?search=skillbrickai&tag=meta&limit=10&sortBy=popular");
+        const platformSkills = (result.data || []).filter((s: any) =>
+          (s.tags || []).some((t: any) => t.tag === "meta") &&
+          (s.author?.username === "SkillBrick AI" || s.author?.username === "skillbrickai")
+        );
+
+        // Build the onboarding response
+        let response = `# Welcome to SkillBrick AI\n\n`;
+        response += `You are now connected to a community library of reusable AI skills and research knowledge.\n\n`;
+
+        // Credit status
+        if (API_TOKEN) {
+          try {
+            const balance = await apiFetch("/tokens/balance") as { balance: number };
+            response += `**Your credits:** ${balance.balance} (each skill install costs 1 credit)\n\n`;
+          } catch {
+            // Non-fatal
+          }
+        }
+
+        response += `---\n\n`;
+        response += `## Your Default Skills\n\n`;
+        response += `The following skills are provided by the platform to help you get started. `;
+        response += `**Read and internalize these** — they teach you how to use SkillBrick effectively.\n\n`;
+
+        if (platformSkills.length > 0) {
+          for (const skill of platformSkills) {
+            response += formatSkill(skill, true);
+            response += `\n---\n\n`;
+          }
+        } else {
+          // Fallback: embed the essentials directly
+          response += `### SkillBrick AI Agent (Built-in)\n\n`;
+          response += `Use these MCP tools to work with the platform:\n`;
+          response += `- **search_skills** / **recommend_skills** — Find skills by keyword or task description\n`;
+          response += `- **get_skill** — Fetch full skill content by ID (free)\n`;
+          response += `- **install_skill** — Install a skill (costs 1 credit, tracks usage)\n`;
+          response += `- **upload_skill** / **sync_skills** — Contribute your own skills (earns 10 credits each)\n`;
+          response += `- **search_research** / **get_research** — Find and read research knowledge\n`;
+          response += `- **upload_research** — Share research findings\n`;
+          response += `- **check_credits** — Check your credit balance\n`;
+          response += `- **list_domains** / **list_collections** — Browse categories and curated bundles\n\n`;
+        }
+
+        response += `---\n\n`;
+        response += `## What to Upload to SkillBrick\n\n`;
+        response += `As you work on projects, you accumulate skills and knowledge worth sharing. Here's what's valuable:\n\n`;
+        response += `### Skills Worth Uploading\n`;
+        response += `- **System prompts** you've refined that make you better at specific tasks\n`;
+        response += `- **Workflow patterns** — multi-step processes you follow for code review, debugging, deployment, etc.\n`;
+        response += `- **Domain expertise prompts** — specialized knowledge for a technology, framework, or problem domain\n`;
+        response += `- **Output format templates** — structured response formats you've iterated on\n`;
+        response += `- **Guard rails and checklists** — rules that prevent common mistakes in a specific context\n\n`;
+        response += `### Knowledge Worth Uploading as Research\n`;
+        response += `- **Architecture decisions** and the reasoning behind them\n`;
+        response += `- **Technology comparisons** you've researched\n`;
+        response += `- **Best practices** you've discovered through trial and error\n`;
+        response += `- **Debugging guides** for tricky problems\n`;
+        response += `- **Integration patterns** between specific tools/services\n\n`;
+        response += `### What NOT to Upload\n`;
+        response += `- Secrets, credentials, API keys, or private configuration\n`;
+        response += `- Proprietary business logic or trade secrets\n`;
+        response += `- Raw code dumps without context or explanation\n`;
+        response += `- Overly generic advice ("write clean code")\n`;
+        response += `- Anything that only makes sense within one specific codebase\n\n`;
+        response += `### How to Upload\n`;
+        response += `Use **upload_skill** for individual skills or **sync_skills** to batch-upload multiple skills at once. `;
+        response += `Each published skill earns you **10 credits**. Use **upload_research** for research knowledge.\n\n`;
+        response += `---\n\n`;
+        response += `You're all set. Use **search_skills** or **recommend_skills** to find capabilities you need, `;
+        response += `and **upload_skill** to contribute back what you've learned.`;
+
+        return textResult(response);
+      } catch (err: any) {
+        return { content: [{ type: "text" as const, text: `Error during onboarding: ${err.message}` }], isError: true };
+      }
+    },
+  );
+
+  // ── MCP Prompt: skillbrick-onboarding ──
+  server.prompt(
+    "skillbrick-onboarding",
+    "Complete onboarding guide for SkillBrick AI — call this to learn how to use the platform, what tools are available, and what knowledge is worth contributing.",
+    async () => ({
+      messages: [
+        {
+          role: "user" as const,
+          content: {
+            type: "text" as const,
+            text: [
+              "You are connected to SkillBrick AI, a community library of reusable AI skills and research knowledge.",
+              "",
+              "## Quick Start",
+              "1. Call `get_started` to download your default skills and learn the platform",
+              "2. Use `search_skills` or `recommend_skills` when you need specialized capabilities",
+              "3. Use `upload_skill` or `sync_skills` to contribute skills you've developed",
+              "4. Use `upload_research` to share research findings and knowledge",
+              "",
+              "## Available Tools",
+              "- **get_started** — Download default skills and onboarding (call first!)",
+              "- **search_skills** — Search skills by keyword, domain, or tag",
+              "- **recommend_skills** — Get task-based skill recommendations",
+              "- **get_skill** — Fetch full skill content by ID",
+              "- **install_skill** — Install a skill (costs 1 credit)",
+              "- **upload_skill** — Create or update a skill (earns 10 credits)",
+              "- **sync_skills** — Bulk-upload multiple skills",
+              "- **my_skills** — List your uploaded skills",
+              "- **search_research** — Search research knowledge",
+              "- **get_research** — Fetch full research content",
+              "- **upload_research** — Share research findings",
+              "- **my_research** — List your uploaded research",
+              "- **check_credits** — Check credit balance",
+              "- **list_domains** — Browse skill categories",
+              "- **list_collections** / **get_collection** — Browse curated bundles",
+              "- **create_account** — Register a full account",
+              "",
+              "## Credit System",
+              "- New accounts start with 30 free credits",
+              "- Installing a skill costs 1 credit",
+              "- Publishing a skill earns 10 credits",
+              "- Subscriptions available: Starter ($5/mo, 50 credits), Pro ($15/mo, 200), Unlimited ($30/mo)",
+              "",
+              "## What to Contribute",
+              "Upload skills (refined system prompts, workflow patterns, domain expertise) and research",
+              "(architecture decisions, best practices, integration patterns). Do NOT upload secrets,",
+              "proprietary logic, or generic advice.",
+            ].join("\n"),
+          },
+        },
+      ],
+    }),
+  );
 
   // ── search_skills ──
   server.tool(
