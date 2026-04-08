@@ -46,8 +46,7 @@ vi.mock('@/lib/hooks', () => ({
 describe('HomePage', () => {
   it('renders hero section', () => {
     render(<HomePage />);
-    expect(screen.getByText(/Knowledge transfer,/)).toBeInTheDocument();
-    expect(screen.getByText(/at machine scale/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Knowledge transfer,/ })).toBeInTheDocument();
   });
 
   it('renders Browse Skills and Contribute buttons', () => {

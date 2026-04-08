@@ -31,6 +31,33 @@ export interface NormalizedSkill {
   claimedAt: string | null;
 }
 
+export interface NormalizedResearchSource {
+  title: string;
+  url: string | null;
+  description: string | null;
+}
+
+export interface NormalizedResearch {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  author: NormalizedAuthor;
+  tags: string[];
+  domain: string;
+  sources: NormalizedResearchSource[];
+  methodology: string | null;
+  keyFindings: string | null;
+  references: number;
+  upvotes: number;
+  createdAt: string;
+  originalAuthorName: string | null;
+  originalAuthorUrl: string | null;
+  sourceUrl: string | null;
+  claimedBy: { id: string; username: string } | null;
+  claimedAt: string | null;
+}
+
 export interface NormalizedCommunityUser {
   id: string;
   name: string;
@@ -134,6 +161,33 @@ function normalizeSkill(s: any): NormalizedSkill {
     sourceUrl: s.sourceUrl ?? null,
     claimedBy: s.claimedBy ?? null,
     claimedAt: s.claimedAt ?? null,
+  };
+}
+
+function normalizeResearch(r: any): NormalizedResearch {
+  return {
+    id: r.id,
+    title: r.name,
+    description: r.description,
+    content: r.content,
+    author: normalizeAuthor(r.author),
+    tags: r.tags?.map((t: any) => t.tag) ?? [],
+    domain: r.domain,
+    sources: r.sources?.map((s: any) => ({
+      title: s.title,
+      url: s.url ?? null,
+      description: s.description ?? null,
+    })) ?? [],
+    methodology: r.methodology ?? null,
+    keyFindings: r.keyFindings ?? null,
+    references: r.referenceCount ?? 0,
+    upvotes: r._count?.upvotes ?? 0,
+    createdAt: r.createdAt,
+    originalAuthorName: r.originalAuthorName ?? null,
+    originalAuthorUrl: r.originalAuthorUrl ?? null,
+    sourceUrl: r.sourceUrl ?? null,
+    claimedBy: r.claimedBy ?? null,
+    claimedAt: r.claimedAt ?? null,
   };
 }
 
@@ -292,6 +346,50 @@ export function useSkill(id: string | undefined) {
       return normalizeSkill(data);
     },
     enabled: !!id,
+  });
+}
+
+// ── Research hooks ──
+
+export function useResearchList(params?: {
+  search?: string;
+  domain?: string;
+  tag?: string;
+  sortBy?: string;
+  page?: number;
+  limit?: number;
+}) {
+  return useQuery({
+    queryKey: ['research', params],
+    queryFn: async (): Promise<{ research: NormalizedResearch[]; meta: any }> => {
+      const { data } = await api.get('/research', { params });
+      return {
+        research: (data.data as any[]).map(normalizeResearch),
+        meta: data.meta,
+      };
+    },
+  });
+}
+
+export function useResearch(id: string | undefined) {
+  return useQuery({
+    queryKey: ['research-item', id],
+    queryFn: async (): Promise<NormalizedResearch> => {
+      const { data } = await api.get(`/research/${id}`);
+      return normalizeResearch(data);
+    },
+    enabled: !!id,
+  });
+}
+
+export function useUserResearch(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['user-research', userId],
+    queryFn: async (): Promise<NormalizedResearch[]> => {
+      const { data } = await api.get('/research', { params: { author: userId, limit: 100 } });
+      return (data.data as any[]).map(normalizeResearch);
+    },
+    enabled: !!userId,
   });
 }
 

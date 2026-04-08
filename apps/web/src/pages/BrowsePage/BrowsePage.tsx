@@ -5,14 +5,29 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Button } from '@/components/ui/Button/Button';
-import { useSkills, useDomains } from '@/lib/hooks';
+import { useSkills, useResearchList, useDomains } from '@/lib/hooks';
 import styles from './BrowsePage.module.scss';
+
+type BrowseTab = 'skills' | 'research';
 
 export default function BrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedDomain, setSelectedDomain] = useState(searchParams.get('domain') || 'all');
   const [sortBy, setSortBy] = useState<'trending' | 'newest'>('trending');
+  const [activeTab, setActiveTab] = useState<BrowseTab>(
+    (searchParams.get('type') as BrowseTab) || 'skills'
+  );
+
+  const handleTabChange = (tab: BrowseTab) => {
+    setActiveTab(tab);
+    if (tab === 'skills') {
+      searchParams.delete('type');
+    } else {
+      searchParams.set('type', tab);
+    }
+    setSearchParams(searchParams);
+  };
 
   const { data: domainsData } = useDomains();
   const domains = domainsData ?? [];
@@ -24,7 +39,15 @@ export default function BrowsePage() {
     limit: 50,
   });
 
+  const { data: researchData } = useResearchList({
+    search: searchQuery || undefined,
+    domain: selectedDomain !== 'all' ? selectedDomain : undefined,
+    sortBy: sortBy === 'trending' ? 'references' : 'newest',
+    limit: 50,
+  });
+
   const filteredSkills = skillsData?.skills ?? [];
+  const filteredResearch = researchData?.research ?? [];
 
   const handleDomainChange = (domain: string) => {
     setSelectedDomain(domain);
@@ -66,16 +89,39 @@ export default function BrowsePage() {
 
       {/* Search Section */}
       <div className={styles.searchSection}>
-        <h1 className={styles.title}>Browse Skills</h1>
+        <h1 className={styles.title}>
+          {activeTab === 'skills' ? 'Browse Skills' : 'Browse Research'}
+        </h1>
         <p className={styles.subtitle}>
-          Discover prompts that make AI agents smarter in specific domains
+          {activeTab === 'skills'
+            ? 'Discover prompts that make AI agents smarter in specific domains'
+            : 'Explore raw insights, findings, and analysis across domains'}
         </p>
+
+        <div className={styles.tabBar}>
+          <Button
+            variant={activeTab === 'skills' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('skills')}
+          >
+            Skills
+          </Button>
+          <Button
+            variant={activeTab === 'research' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('research')}
+          >
+            Research
+          </Button>
+        </div>
 
         <div className={styles.searchWrapper}>
           <Search className={styles.searchIcon} />
           <Input
             type="text"
-            placeholder="Search skills, tags, or domains..."
+            placeholder={activeTab === 'skills'
+              ? 'Search skills, tags, or domains...'
+              : 'Search research, tags, or domains...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -130,61 +176,119 @@ export default function BrowsePage() {
       {/* Results count */}
       <div className={styles.resultsCount}>
         <p>
-          {filteredSkills.length} {filteredSkills.length === 1 ? 'skill' : 'skills'} found
+          {activeTab === 'skills'
+            ? `${filteredSkills.length} ${filteredSkills.length === 1 ? 'skill' : 'skills'} found`
+            : `${filteredResearch.length} ${filteredResearch.length === 1 ? 'item' : 'items'} found`}
         </p>
       </div>
 
-      {/* Skills List */}
+      {/* Content List */}
       <div className={styles.skillsList}>
-        {filteredSkills.length === 0 ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyTitle}>No skills found</p>
-            <p className={styles.emptySubtitle}>Try adjusting your search or filters</p>
-          </div>
-        ) : (
-          filteredSkills.map(skill => (
-            <Link
-              key={skill.id}
-              to={`/skill/${skill.id}`}
-              className={styles.skillCard}
-            >
-              <div className={styles.skillCardInner}>
-                <img
-                  src={skill.author.avatar}
-                  alt={skill.author.name}
-                  className={styles.skillAvatar}
-                />
+        {activeTab === 'skills' ? (
+          filteredSkills.length === 0 ? (
+            <div className={styles.empty}>
+              <p className={styles.emptyTitle}>No skills found</p>
+              <p className={styles.emptySubtitle}>Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            filteredSkills.map(skill => (
+              <Link
+                key={skill.id}
+                to={`/skill/${skill.id}`}
+                className={styles.skillCard}
+              >
+                <div className={styles.skillCardInner}>
+                  <img
+                    src={skill.author.avatar}
+                    alt={skill.author.name}
+                    className={styles.skillAvatar}
+                  />
 
-                <div className={styles.skillContent}>
-                  <div className={styles.skillHeader}>
-                    <div className={styles.skillHeaderText}>
-                      <h3 className={styles.skillTitle}>{skill.title}</h3>
-                      <p className={styles.skillAuthor}>
-                        {skill.originalAuthorName
-                          ? <>originally by {skill.originalAuthorName}{skill.claimedBy ? <> &middot; claimed</> : <> &middot; <span className={styles.unclaimed}>unclaimed</span></>}</>
-                          : <>by {skill.author.name}</>
-                        }
-                      </p>
+                  <div className={styles.skillContent}>
+                    <div className={styles.skillHeader}>
+                      <div className={styles.skillHeaderText}>
+                        <h3 className={styles.skillTitle}>{skill.title}</h3>
+                        <p className={styles.skillAuthor}>
+                          {skill.originalAuthorName
+                            ? <>originally by {skill.originalAuthorName}{skill.claimedBy ? <> &middot; claimed</> : <> &middot; <span className={styles.unclaimed}>unclaimed</span></>}</>
+                            : <>by {skill.author.name}</>
+                          }
+                        </p>
+                      </div>
+                      <Badge variant="outline">{skill.domain}</Badge>
                     </div>
-                    <Badge variant="outline">{skill.domain}</Badge>
-                  </div>
 
-                  <p className={styles.skillDescription}>{skill.description}</p>
+                    <p className={styles.skillDescription}>{skill.description}</p>
 
-                  <div className={styles.skillFooter}>
-                    <div className={styles.skillTags}>
-                      {skill.tags.map(tag => (
-                        <Badge key={tag} variant="secondary">{tag}</Badge>
-                      ))}
-                    </div>
-                    <div className={styles.skillUses}>
-                      {skill.downloads.toLocaleString()} uses
+                    <div className={styles.skillFooter}>
+                      <div className={styles.skillTags}>
+                        {skill.tags.map(tag => (
+                          <Badge key={tag} variant="secondary">{tag}</Badge>
+                        ))}
+                      </div>
+                      <div className={styles.skillUses}>
+                        {skill.downloads.toLocaleString()} uses
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))
+              </Link>
+            ))
+          )
+        ) : (
+          filteredResearch.length === 0 ? (
+            <div className={styles.empty}>
+              <p className={styles.emptyTitle}>No research found</p>
+              <p className={styles.emptySubtitle}>Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            filteredResearch.map(item => (
+              <Link
+                key={item.id}
+                to={`/research/${item.id}`}
+                className={styles.skillCard}
+              >
+                <div className={styles.skillCardInner}>
+                  <img
+                    src={item.author.avatar}
+                    alt={item.author.name}
+                    className={styles.skillAvatar}
+                  />
+
+                  <div className={styles.skillContent}>
+                    <div className={styles.skillHeader}>
+                      <div className={styles.skillHeaderText}>
+                        <h3 className={styles.skillTitle}>{item.title}</h3>
+                        <p className={styles.skillAuthor}>
+                          {item.originalAuthorName
+                            ? <>originally by {item.originalAuthorName}{item.claimedBy ? <> &middot; claimed</> : <> &middot; <span className={styles.unclaimed}>unclaimed</span></>}</>
+                            : <>by {item.author.name}</>
+                          }
+                        </p>
+                      </div>
+                      <Badge variant="outline">{item.domain}</Badge>
+                    </div>
+
+                    <p className={styles.skillDescription}>{item.description}</p>
+
+                    <div className={styles.skillFooter}>
+                      <div className={styles.skillTags}>
+                        {item.tags.map(tag => (
+                          <Badge key={tag} variant="secondary">{tag}</Badge>
+                        ))}
+                        {item.sources.length > 0 && (
+                          <Badge variant="secondary">{item.sources.length} sources</Badge>
+                        )}
+                      </div>
+                      <div className={styles.skillUses}>
+                        {item.references.toLocaleString()} references
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))
+          )
         )}
       </div>
     </div>

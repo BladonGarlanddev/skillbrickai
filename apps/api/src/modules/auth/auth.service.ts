@@ -258,6 +258,59 @@ export class AuthService {
     });
   }
 
+  /**
+   * Auto-provision a guest account for MCP clients.
+   * Creates an account with no password — authenticated only via token.
+   * If a clientId is provided, returns the existing account if one exists.
+   */
+  async provision(clientId?: string) {
+    // If a clientId is provided, check for an existing provisioned account
+    if (clientId) {
+      const existing = await this.prisma.user.findFirst({
+        where: { email: { startsWith: `mcp_${clientId}@` } },
+      });
+      if (existing) {
+        const token = this.generateToken(existing.id, existing.email);
+        return {
+          accessToken: token,
+          user: {
+            id: existing.id,
+            email: existing.email,
+            username: existing.username,
+          },
+          isNewAccount: false,
+        };
+      }
+    }
+
+    const id = clientId || `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const email = `mcp_${id}@guest.skillbrickai.com`;
+    const username = `mcp_${id}`;
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        username,
+        isEarlyAdopter: true,
+      },
+    });
+
+    await this.badgesService.awardBadge(user.id, 'EARLY_ADOPTER');
+    await this.tokensService.creditTokens(user.id, 30, 'ACCOUNT_CREATED');
+
+    const token = this.generateToken(user.id, user.email);
+
+    return {
+      accessToken: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      },
+      isNewAccount: true,
+    };
+  }
+
   generateToken(userId: string, email: string): string {
     return this.jwtService.sign({ sub: userId, email });
   }

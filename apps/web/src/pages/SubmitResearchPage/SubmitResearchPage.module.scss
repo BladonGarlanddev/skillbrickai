@@ -1,0 +1,183 @@
+.page {
+  @include container-narrow;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.backButton {
+  margin-bottom: 2rem;
+  margin-left: -0.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.headerIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: rgba($foreground, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  color: rgba($foreground, 0.6);
+  line-height: 1.625;
+  max-width: 42rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.metadataSection {
+  padding: 2rem;
+  border-radius: $radius;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: rgba($foreground, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionTitle {
+  font-weight: 500;
+}
+
+.sectionSubtitle {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+  line-height: 1.625;
+  margin-top: -0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.fieldHint {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.fieldRow {
+  display: grid;
+  gap: 1.5rem;
+
+  @include respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.select {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: $radius;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: $background;
+  font-size: 1rem;
+  color: $foreground;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.tagPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.contentTextarea {
+  font-family: monospace;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  resize: vertical;
+}
+
+.guidelines {
+  padding: 1.5rem;
+  border-radius: $radius;
+  background-color: rgba($foreground, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.guidelinesTitle {
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.guidelinesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.7);
+
+  li {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.bullet {
+  color: rgba($foreground, 0.4);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Source entry fields
+.sourceEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  background-color: rgba($foreground, 0.01);
+}
+
+.sourceEntryRow {
+  display: grid;
+  gap: 0.75rem;
+
+  @include respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.sourceActions {
+  display: flex;
+  gap: 0.5rem;
+}

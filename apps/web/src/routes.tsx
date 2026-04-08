@@ -10,8 +10,12 @@ import AuthPage from '@/pages/AuthPage/AuthPage';
 import CommunityPage from '@/pages/CommunityPage/CommunityPage';
 import CollectionDetailPage from '@/pages/CollectionDetailPage/CollectionDetailPage';
 import AuthCallbackPage from '@/pages/AuthCallbackPage/AuthCallbackPage';
+import ResearchDetailPage from '@/pages/ResearchDetailPage/ResearchDetailPage';
+import SubmitResearchPage from '@/pages/SubmitResearchPage/SubmitResearchPage';
 import DocsPage from '@/pages/DocsPage/DocsPage';
 import GuidePage from '@/pages/GuidePage/GuidePage';
+import ServicesPage from '@/pages/ServicesPage/ServicesPage';
+import TermsPage from '@/pages/TermsPage/TermsPage';
 
 function RootLayout() {
   return (
@@ -42,11 +46,15 @@ export function AppRoutes() {
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/guide" element={<GuidePage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/research/:researchId" element={<ResearchDetailPage />} />
         <Route path="/collection/:collectionId" element={<CollectionDetailPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/submit-research" element={<SubmitResearchPage />} />
         </Route>
       </Route>
     </Routes>

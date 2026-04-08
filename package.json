@@ -11,7 +11,10 @@
     "db:reset": "docker compose down -v && docker compose up -d",
     "db:migrate": "pnpm --filter @skillbrickai/api prisma:migrate",
     "db:studio": "pnpm --filter @skillbrickai/api prisma:studio",
-    "db:seed": "pnpm --filter @skillbrickai/api prisma:seed"
+    "db:seed": "pnpm --filter @skillbrickai/api prisma:seed",
+    "db:seed:all": "pnpm --filter @skillbrickai/api prisma:seed:all",
+    "db:seed:prod": "pnpm --filter @skillbrickai/api prisma:seed:prod",
+    "db:migrate:prod": "pnpm --filter @skillbrickai/api prisma:migrate:prod"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

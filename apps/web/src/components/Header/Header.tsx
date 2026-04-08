@@ -26,7 +26,7 @@ export function Header() {
         <nav className={styles.nav}>
           <Link to="/browse">
             <Button
-              variant={location.pathname === '/browse' ? 'secondary' : 'ghost'}
+              variant={location.pathname === '/browse' || location.pathname.startsWith('/research') ? 'secondary' : 'ghost'}
               size="sm"
             >
               Browse
@@ -42,7 +42,7 @@ export function Header() {
           </Link>
           <Link to="/submit">
             <Button
-              variant={location.pathname === '/submit' ? 'secondary' : 'ghost'}
+              variant={location.pathname === '/submit' || location.pathname === '/submit-research' ? 'secondary' : 'ghost'}
               size="sm"
             >
               Contribute

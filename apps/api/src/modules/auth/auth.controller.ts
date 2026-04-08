@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { Public } from '../../common/decorators/public.decorator';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, IsOptional, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -35,6 +35,12 @@ export class LoginDto {
   password: string;
 }
 
+export class ProvisionDto {
+  @IsOptional()
+  @IsString()
+  clientId?: string;
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -55,6 +61,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email and password' })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.email, dto.password);
+  }
+
+  @Public()
+  @Post('provision')
+  @Throttle({ short: { limit: 5, ttl: 60000 } })
+  @ApiOperation({ summary: 'Auto-provision a guest account for MCP clients' })
+  async provision(@Body() dto: ProvisionDto) {
+    return this.authService.provision(dto.clientId);
   }
 
   @Post('logout')

@@ -203,29 +203,75 @@ export SKILLBRICK_API_TOKEN="your-token-here"`}</CodeBlock>
           <div className={styles.toolList}>
             <div className={styles.tool}>
               <span className={styles.toolName}>search_skills</span>
-              <span className={styles.toolDesc}>Search skills by keyword, domain, tag, or sort order. Returns paginated results.</span>
+              <span className={styles.toolDesc}>Search by keyword, domain, or tag with natural language queries.</span>
+            </div>
+            <div className={styles.tool}>
+              <span className={styles.toolName}>recommend_skills</span>
+              <span className={styles.toolDesc}>Describe a task and get ranked skill recommendations.</span>
             </div>
             <div className={styles.tool}>
               <span className={styles.toolName}>get_skill</span>
-              <span className={styles.toolDesc}>Get the full details of a skill, including its complete prompt content.</span>
+              <span className={styles.toolDesc}>Fetch the full prompt content of a skill by ID.</span>
             </div>
             <div className={styles.tool}>
               <span className={styles.toolName}>install_skill</span>
-              <span className={styles.toolDesc}>Install a skill and receive the prompt content. Requires an auth token.</span>
+              <span className={styles.toolDesc}>Install a skill (costs 1 token, requires auth). Returns the prompt content.</span>
+            </div>
+            <div className={styles.tool}>
+              <span className={styles.toolName}>upload_skill</span>
+              <span className={styles.toolDesc}>Create or update a skill on the platform (requires auth).</span>
+            </div>
+            <div className={styles.tool}>
+              <span className={styles.toolName}>sync_skills</span>
+              <span className={styles.toolDesc}>Bulk upload or update multiple skills at once (requires auth).</span>
+            </div>
+            <div className={styles.tool}>
+              <span className={styles.toolName}>my_skills</span>
+              <span className={styles.toolDesc}>List your uploaded skills with version and hash info.</span>
+            </div>
+            <div className={styles.tool}>
+              <span className={styles.toolName}>check_credits</span>
+              <span className={styles.toolDesc}>Check your download credit balance.</span>
             </div>
             <div className={styles.tool}>
               <span className={styles.toolName}>list_collections</span>
-              <span className={styles.toolDesc}>Browse curated skill collections organized by theme or workflow.</span>
+              <span className={styles.toolDesc}>Browse curated skill collections.</span>
             </div>
             <div className={styles.tool}>
               <span className={styles.toolName}>get_collection</span>
-              <span className={styles.toolDesc}>Get a collection with all its skills and their details.</span>
+              <span className={styles.toolDesc}>Get a collection with all its skills.</span>
             </div>
             <div className={styles.tool}>
               <span className={styles.toolName}>list_domains</span>
-              <span className={styles.toolDesc}>List all available skill categories (coding, writing, research, etc.).</span>
+              <span className={styles.toolDesc}>List all available skill categories.</span>
             </div>
           </div>
+        </div>
+
+        <div className={styles.subsection}>
+          <h3 className={styles.subsectionTitle}>Recommended: Background Setup Agent</h3>
+          <p className={styles.content}>
+            For the best experience, have your agent run a <strong>background subagent</strong> when it first connects to SkillBrick AI. This handles initial configuration without blocking your conversation:
+          </p>
+          <CodeBlock lang="text">{`Suggested subagent prompt:
+
+"Configure SkillBrick AI for this session. Run these steps in the background:
+
+ 1. Fetch the 'SkillBrick AI Agent' skill and apply its instructions.
+    This teaches you how to use the platform effectively.
+
+ 2. Fetch the 'Skill Creator' skill and keep it available in case
+    the user wants to create or publish new skills.
+
+ 3. Run list_domains to discover available skill categories.
+
+ 4. Run check_credits to see the current token balance.
+
+ 5. Report back: available domains, credit balance, and confirmation
+    that the platform skills are loaded."
+
+This runs as a background task — you can keep working while
+the agent sets itself up with SkillBrick AI capabilities.`}</CodeBlock>
         </div>
 
         <div className={styles.subsection}>

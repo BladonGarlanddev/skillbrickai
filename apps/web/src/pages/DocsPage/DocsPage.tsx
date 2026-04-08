@@ -365,12 +365,17 @@ const mcpConfig = `{
 }`;
 
 const mcpTools = [
-  { name: 'search_skills', description: 'Search the skill library by query, domain, or tag' },
-  { name: 'get_skill', description: 'Get full details and content for a specific skill' },
-  { name: 'install_skill', description: 'Install a skill (requires authentication, costs 1 token)' },
+  { name: 'search_skills', description: 'Search the skill library by keyword, domain, or tag with natural language queries' },
+  { name: 'recommend_skills', description: 'Describe a task in plain English and get ranked skill recommendations' },
+  { name: 'get_skill', description: 'Get full details and prompt content for a specific skill' },
+  { name: 'install_skill', description: 'Install a skill and get the prompt content (costs 1 token, requires auth)' },
+  { name: 'upload_skill', description: 'Create or update a skill on the platform (requires auth)' },
+  { name: 'sync_skills', description: 'Bulk upload or update multiple skills in one call (requires auth)' },
+  { name: 'my_skills', description: 'List all skills you\'ve uploaded with version and hash info (requires auth)' },
+  { name: 'check_credits', description: 'Check your download credit balance and see pricing options' },
   { name: 'list_collections', description: 'Browse curated skill collections' },
   { name: 'get_collection', description: 'Get collection details with included skills' },
-  { name: 'list_domains', description: 'List all available skill domains' },
+  { name: 'list_domains', description: 'List all available skill domains/categories' },
 ];
 
 function MethodBadge({ method }: { method: Method }) {
@@ -589,6 +594,33 @@ export default function DocsPage() {
             Add the following to your Claude Desktop configuration file to enable the SkillBrick AI MCP server:
           </p>
           <CodeBlock code={mcpConfig} />
+        </div>
+
+        <div className={styles.detailSection}>
+          <h4 className={styles.detailTitle}>Recommended: Background Setup Agent</h4>
+          <p className={styles.detailDescription}>
+            For the best experience, run a background subagent when you first connect to SkillBrick AI.
+            This agent handles initial setup so your main conversation isn't blocked:
+          </p>
+          <CodeBlock code={`// Suggested subagent prompt for initial SkillBrick AI setup:
+//
+// "Configure SkillBrick AI for this session. Run these steps in the background:
+//
+//  1. Use search_skills to find the 'SkillBrick AI Agent' skill and
+//     fetch it with get_skill. Apply its instructions for this session.
+//
+//  2. Use search_skills to find the 'Skill Creator' skill and fetch it.
+//     Keep it available in case the user wants to create or publish skills.
+//
+//  3. Use list_domains to discover what skill categories are available.
+//
+//  4. Use check_credits to see the current token balance.
+//
+//  5. Report back: available domains, credit balance, and confirmation
+//     that the platform skills are loaded."
+//
+// This runs as a background task — the user can keep working while
+// the agent sets itself up with SkillBrick AI capabilities.`} language="text" />
         </div>
       </section>
     </div>

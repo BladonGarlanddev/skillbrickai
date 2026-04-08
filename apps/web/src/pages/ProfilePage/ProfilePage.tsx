@@ -8,7 +8,7 @@ import type { BadgeType } from '@/data/community-data';
 import { BadgeShelf } from '@/components/BadgeDisplay/BadgeDisplay';
 import { Upvote } from '@/components/Upvote/Upvote';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs/Tabs';
-import { useUserProfile, useUserSkills, useUserCollections } from '@/lib/hooks';
+import { useUserProfile, useUserSkills, useUserCollections, useUserResearch } from '@/lib/hooks';
 import { useAuthStore } from '@/stores/auth.store';
 import styles from './ProfilePage.module.scss';
 
@@ -20,6 +20,7 @@ export default function ProfilePage() {
 
   const { data: user, isLoading } = useUserProfile(userId);
   const { data: userSkills } = useUserSkills(userId);
+  const { data: userResearch } = useUserResearch(userId);
   const { data: userCollections } = useUserCollections(userId);
 
   if (isLoading || !user) {
@@ -69,6 +70,7 @@ export default function ProfilePage() {
       <Tabs defaultValue="skills">
         <TabsList>
           <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="collections">Collections</TabsTrigger>
         </TabsList>
 
@@ -93,6 +95,35 @@ export default function ProfilePage() {
                     <div className={styles.skillCardMeta}>
                       <Upvote initialCount={skill.upvotes} size="sm" />
                       <span>{skill.downloads.toLocaleString()} uses</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="research">
+          {!userResearch || userResearch.length === 0 ? (
+            <div className={styles.empty}>No research published yet</div>
+          ) : (
+            <div className={styles.skillsList}>
+              {userResearch.map(item => (
+                <Link key={item.id} to={`/research/${item.id}`} className={styles.skillCard}>
+                  <div className={styles.skillCardHeader}>
+                    <h3 className={styles.skillCardTitle}>{item.title}</h3>
+                    <Badge variant="outline">{item.domain}</Badge>
+                  </div>
+                  <p className={styles.skillCardDesc}>{item.description}</p>
+                  <div className={styles.skillCardFooter}>
+                    <div className={styles.skillCardTags}>
+                      {item.tags.slice(0, 3).map(tag => (
+                        <Badge key={tag} variant="secondary">{tag}</Badge>
+                      ))}
+                    </div>
+                    <div className={styles.skillCardMeta}>
+                      <Upvote initialCount={item.upvotes} size="sm" />
+                      <span>{item.references.toLocaleString()} references</span>
                     </div>
                   </div>
                 </Link>
