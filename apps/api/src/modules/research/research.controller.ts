@@ -22,6 +22,7 @@ import {
   IsOptional,
   IsArray,
   IsInt,
+  IsIn,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -52,6 +53,10 @@ export class CreateResearchDto {
 
   @IsString()
   domain: string;
+
+  @IsOptional()
+  @IsIn(['PUBLIC', 'PRIVATE'])
+  visibility?: 'PUBLIC' | 'PRIVATE';
 
   @IsOptional()
   @IsArray()
@@ -134,6 +139,10 @@ export class UpsertResearchDto {
 
   @IsString()
   domain: string;
+
+  @IsOptional()
+  @IsIn(['PUBLIC', 'PRIVATE'])
+  visibility?: 'PUBLIC' | 'PRIVATE';
 
   @IsOptional()
   @IsArray()

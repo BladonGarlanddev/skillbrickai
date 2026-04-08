@@ -101,7 +101,9 @@ export class SkillsService {
     const limit = Math.min(query.limit || 20, 100);
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      visibility: 'PUBLIC',
+    };
 
     if (query.search) {
       where.OR = [
@@ -162,6 +164,7 @@ export class SkillsService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       testedOn?: string[];
       originalAuthorName?: string;
@@ -208,6 +211,8 @@ export class SkillsService {
 
     const slug = generateSlug(data.name);
 
+    const visibility = data.visibility || 'PUBLIC';
+
     const skill = await this.prisma.skill.create({
       data: {
         name: data.name,
@@ -216,6 +221,7 @@ export class SkillsService {
         content: data.content,
         contentHash: contentDigest,
         domain: data.domain,
+        visibility,
         authorId: userId,
         originalAuthorName: data.originalAuthorName || null,
         originalAuthorUrl: data.originalAuthorUrl || null,
@@ -242,8 +248,10 @@ export class SkillsService {
       },
     });
 
-    // Credit 10 tokens for posting a skill
-    await this.tokensService.creditTokens(userId, 10, 'SKILL_POSTED', skill.id);
+    // Credit 10 tokens for posting a public skill (private skills don't earn credits)
+    if (visibility === 'PUBLIC') {
+      await this.tokensService.creditTokens(userId, 10, 'SKILL_POSTED', skill.id);
+    }
 
     // Award Contributor badge if this is the user's first skill
     const skillCount = await this.prisma.skill.count({
@@ -527,6 +535,7 @@ export class SkillsService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       testedOn?: string[];
     },
@@ -563,6 +572,7 @@ export class SkillsService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       testedOn?: string[];
     }>,

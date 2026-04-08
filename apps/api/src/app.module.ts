@@ -13,6 +13,7 @@ import { TokensModule } from './modules/tokens/tokens.module';
 import { BadgesModule } from './modules/badges/badges.module';
 import { UpvotesModule } from './modules/upvotes/upvotes.module';
 import { ServicesModule } from './modules/services/services.module';
+import { ClaudeMdModule } from './modules/claude-md/claude-md.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ServicesModule } from './modules/services/services.module';
     BadgesModule,
     UpvotesModule,
     ServicesModule,
+    ClaudeMdModule,
   ],
   providers: [
     {

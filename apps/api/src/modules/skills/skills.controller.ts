@@ -23,6 +23,7 @@ import {
   IsOptional,
   IsArray,
   IsInt,
+  IsIn,
   Min,
   Max,
   MaxLength,
@@ -46,6 +47,10 @@ export class CreateSkillDto {
   @IsString()
   @MaxLength(100)
   domain: string;
+
+  @IsOptional()
+  @IsIn(['PUBLIC', 'PRIVATE'])
+  visibility?: 'PUBLIC' | 'PRIVATE';
 
   @IsOptional()
   @IsArray()
@@ -129,6 +134,10 @@ export class UpsertSkillDto {
   @IsString()
   @MaxLength(100)
   domain: string;
+
+  @IsOptional()
+  @IsIn(['PUBLIC', 'PRIVATE'])
+  visibility?: 'PUBLIC' | 'PRIVATE';
 
   @IsOptional()
   @IsArray()

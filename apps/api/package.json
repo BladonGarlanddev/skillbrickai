@@ -12,7 +12,9 @@
     "prisma:seed": "tsx src/prisma/seed.ts",
     "prisma:seed:all": "tsx src/prisma/seed-all.ts",
     "prisma:seed:prod": "dotenv -e .env.production -- tsx src/prisma/seed-all.ts",
-    "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy --schema=src/prisma/schema.prisma"
+    "prisma:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy --schema=src/prisma/schema.prisma",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -47,6 +49,7 @@
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.2"
   }
 }

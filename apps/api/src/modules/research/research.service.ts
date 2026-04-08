@@ -43,7 +43,9 @@ export class ResearchService {
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      visibility: 'PUBLIC',
+    };
 
     if (query.search) {
       where.OR = [
@@ -113,6 +115,7 @@ export class ResearchService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       sources?: Array<{ title: string; url?: string; description?: string }>;
       methodology?: string;
@@ -124,6 +127,7 @@ export class ResearchService {
   ) {
     const slug = generateSlug(data.name);
     const contentDigest = hashContent(data.content);
+    const visibility = data.visibility || 'PUBLIC';
 
     const research = await this.prisma.research.create({
       data: {
@@ -133,6 +137,7 @@ export class ResearchService {
         content: data.content,
         contentHash: contentDigest,
         domain: data.domain,
+        visibility,
         authorId: userId,
         methodology: data.methodology || null,
         keyFindings: data.keyFindings || null,
@@ -167,8 +172,10 @@ export class ResearchService {
       },
     });
 
-    // Credit 5 tokens for posting research
-    await this.tokensService.creditTokens(userId, 5, 'RESEARCH_POSTED', research.id);
+    // Credit 5 tokens for posting public research (private research doesn't earn credits)
+    if (visibility === 'PUBLIC') {
+      await this.tokensService.creditTokens(userId, 5, 'RESEARCH_POSTED', research.id);
+    }
 
     // Award Researcher badge if this is the user's first research
     const researchCount = await this.prisma.research.count({
@@ -396,6 +403,7 @@ export class ResearchService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       sources?: Array<{ title: string; url?: string; description?: string }>;
       methodology?: string;
@@ -434,6 +442,7 @@ export class ResearchService {
       description: string;
       content: string;
       domain: string;
+      visibility?: 'PUBLIC' | 'PRIVATE';
       tags?: string[];
       sources?: Array<{ title: string; url?: string; description?: string }>;
       methodology?: string;
