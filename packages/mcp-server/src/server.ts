@@ -306,6 +306,28 @@ function textResult(content: string) {
   return { content: [{ type: "text" as const, text: content }] };
 }
 
+/**
+ * Ensure we have an API token, retrying auto-provisioning if needed.
+ * Returns true if authenticated, false otherwise.
+ */
+async function ensureToken(): Promise<boolean> {
+  if (API_TOKEN) return true;
+
+  // Retry auto-provisioning once
+  try {
+    await ensureAuthenticated();
+  } catch {
+    // ignore
+  }
+
+  return !!API_TOKEN;
+}
+
+const NO_TOKEN_MSG =
+  "Not authenticated. The server could not auto-provision an account. " +
+  "Please call the create_account tool with an email, username, and password " +
+  "to create an account and authenticate automatically.";
+
 // ---------------------------------------------------------------------------
 // Intelligent search helpers
 // ---------------------------------------------------------------------------
@@ -1144,14 +1166,14 @@ export function createSkillBrickServer(): McpServer {
   // ── install_skill ──
   server.tool(
     "install_skill",
-    "Install a skill from SkillBrick AI. Requires an API token to be configured via SKILLBRICK_API_TOKEN. Returns the skill content/prompt text. If the user has insufficient credits, returns options for earning more.",
+    "Install a skill from SkillBrick AI. Requires authentication (handled automatically). Returns the skill content/prompt text. If the user has insufficient credits, returns options for earning more.",
     {
       skillId: z.string().describe("The ID of the skill to install"),
     },
     async ({ skillId }) => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for installing skills. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch(`/skills/${encodeURIComponent(skillId)}/install`, {
           method: "POST",
@@ -1204,8 +1226,8 @@ export function createSkillBrickServer(): McpServer {
     {},
     async () => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const [balance, pricing] = await Promise.all([
           apiFetch("/tokens/balance") as Promise<{ balance: number }>,
@@ -1371,7 +1393,7 @@ export function createSkillBrickServer(): McpServer {
   // ── upload_skill ──
   server.tool(
     "upload_skill",
-    "Upload or update a skill on SkillBrick AI. If a skill with the same name already exists for your account, it will be updated only if the content has changed. Returns whether the skill was created, updated, or unchanged. Public skills earn 10 credits; private skills earn 0. Always confirm visibility with the user before uploading. Requires SKILLBRICK_API_TOKEN.",
+    "Upload or update a skill on SkillBrick AI. If a skill with the same name already exists for your account, it will be updated only if the content has changed. Returns whether the skill was created, updated, or unchanged. Public skills earn 10 credits; private skills earn 0. Always confirm visibility with the user before uploading. Requires authentication (handled automatically; call create_account if prompted).",
     {
       name: z.string().describe("Skill name/title"),
       description: z.string().describe("One-line description of what the skill does"),
@@ -1385,8 +1407,8 @@ export function createSkillBrickServer(): McpServer {
     },
     async (params) => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for uploading skills. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/skills/upsert", {
           method: "PUT",
@@ -1402,7 +1424,7 @@ export function createSkillBrickServer(): McpServer {
   // ── sync_skills ──
   server.tool(
     "sync_skills",
-    "Bulk-sync multiple skills to SkillBrick AI in one call. Each skill is created if new, updated if content changed, or skipped if unchanged. Returns a summary of what happened. Public skills earn 10 credits each; private skills earn 0. Requires SKILLBRICK_API_TOKEN.",
+    "Bulk-sync multiple skills to SkillBrick AI in one call. Each skill is created if new, updated if content changed, or skipped if unchanged. Returns a summary of what happened. Public skills earn 10 credits each; private skills earn 0. Requires authentication (handled automatically; call create_account if prompted).",
     {
       skills: z.array(z.object({
         name: z.string().describe("Skill name/title"),
@@ -1418,8 +1440,8 @@ export function createSkillBrickServer(): McpServer {
     },
     async ({ skills }) => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for syncing skills. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/skills/bulk-sync", {
           method: "PUT",
@@ -1435,12 +1457,12 @@ export function createSkillBrickServer(): McpServer {
   // ── my_skills ──
   server.tool(
     "my_skills",
-    "List all skills owned by the authenticated user, with version numbers and content hashes. Useful for checking what you've already uploaded. Requires SKILLBRICK_API_TOKEN.",
+    "List all skills owned by the authenticated user, with version numbers and content hashes. Useful for checking what you've already uploaded. Requires authentication (handled automatically; call create_account if prompted).",
     {},
     async () => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/skills/mine");
         return textResult(JSON.stringify(data, null, 2));
@@ -1538,7 +1560,7 @@ export function createSkillBrickServer(): McpServer {
   // ── upload_research ──
   server.tool(
     "upload_research",
-    "Upload or update a research item on SkillBrick AI. If research with the same name already exists for your account, it will be updated only if the content has changed. Public research earns 5 credits; private research earns 0. Requires SKILLBRICK_API_TOKEN.",
+    "Upload or update a research item on SkillBrick AI. If research with the same name already exists for your account, it will be updated only if the content has changed. Public research earns 5 credits; private research earns 0. Requires authentication (handled automatically; call create_account if prompted).",
     {
       name: z.string().describe("Research title"),
       description: z.string().describe("One-line description of the research focus"),
@@ -1558,8 +1580,8 @@ export function createSkillBrickServer(): McpServer {
     },
     async (params) => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required for uploading research. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/research/upsert", {
           method: "PUT",
@@ -1575,12 +1597,12 @@ export function createSkillBrickServer(): McpServer {
   // ── my_research ──
   server.tool(
     "my_research",
-    "List all research owned by the authenticated user, with version numbers and content hashes. Useful for checking what you've already uploaded. Requires SKILLBRICK_API_TOKEN.",
+    "List all research owned by the authenticated user, with version numbers and content hashes. Useful for checking what you've already uploaded. Requires authentication (handled automatically; call create_account if prompted).",
     {},
     async () => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/research/mine");
         return textResult(JSON.stringify(data, null, 2));
@@ -1593,7 +1615,7 @@ export function createSkillBrickServer(): McpServer {
   // ── save_claude_md ──
   server.tool(
     "save_claude_md",
-    "Save or update a CLAUDE.md file to SkillBrick AI. CLAUDE.md files are project configuration files for Claude Code. Defaults to PRIVATE visibility since they're typically project-specific. If the user has a generalizable CLAUDE.md that others could learn from, suggest making it PUBLIC. Requires SKILLBRICK_API_TOKEN.",
+    "Save or update a CLAUDE.md file to SkillBrick AI. CLAUDE.md files are project configuration files for Claude Code. Defaults to PRIVATE visibility since they're typically project-specific. If the user has a generalizable CLAUDE.md that others could learn from, suggest making it PUBLIC. Requires authentication (handled automatically; call create_account if prompted).",
     {
       name: z.string().describe("Project name or identifier (e.g. 'my-saas-app', 'monorepo-config')"),
       description: z.string().describe("One-line description of what project this CLAUDE.md is for"),
@@ -1606,8 +1628,8 @@ export function createSkillBrickServer(): McpServer {
     },
     async (params) => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/claude-md/upsert", {
           method: "PUT",
@@ -1623,12 +1645,12 @@ export function createSkillBrickServer(): McpServer {
   // ── my_claude_mds ──
   server.tool(
     "my_claude_mds",
-    "List all CLAUDE.md files saved by the authenticated user, with version numbers and content hashes. Use this to check what you've already saved. Requires SKILLBRICK_API_TOKEN.",
+    "List all CLAUDE.md files saved by the authenticated user, with version numbers and content hashes. Use this to check what you've already saved. Requires authentication (handled automatically; call create_account if prompted).",
     {},
     async () => {
       try {
-        if (!API_TOKEN) {
-          return textResult("Error: SKILLBRICK_API_TOKEN environment variable is required. Set it in your MCP server configuration.");
+        if (!(await ensureToken())) {
+          return textResult(NO_TOKEN_MSG);
         }
         const data = await apiFetch("/claude-md/mine");
         return textResult(JSON.stringify(data, null, 2));
