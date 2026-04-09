@@ -74,6 +74,7 @@ describe('MCP Server', () => {
         'search_research', 'get_research', 'upload_research', 'my_research',
         'save_claude_md', 'my_claude_mds', 'get_claude_md', 'search_claude_mds',
         'create_account',
+        'login',
       ];
 
       for (const tool of expectedTools) {
@@ -391,6 +392,200 @@ describe('MCP Server', () => {
     });
   });
 
+  describe('login', () => {
+    it('is registered as a tool', () => {
+      expect(hasTool(server, 'login')).toBe(true);
+    });
+
+    it('authenticates successfully and stores token', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        accessToken: 'login-token-123',
+        user: { id: 'u1', username: 'alice', email: 'alice@example.com', credits: 42 },
+      }));
+
+      const result = await callTool(server, 'login', {
+        email: 'alice@example.com',
+        password: 'securePass!',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('Logged in successfully');
+      expect(text).toContain('alice');
+      expect(text).toContain('alice@example.com');
+
+      // Verify correct endpoint and payload
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      expect(lastCall[0]).toContain('/auth/login');
+      const body = JSON.parse(lastCall[1].body);
+      expect(body.email).toBe('alice@example.com');
+      expect(body.password).toBe('securePass!');
+    });
+
+    it('returns error on failed login', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce(mockResponse(
+        'Invalid credentials',
+        false,
+        401,
+      ));
+
+      const result = await callTool(server, 'login', {
+        email: 'alice@example.com',
+        password: 'wrongPass',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('Login failed');
+    });
+
+    it('handles network errors gracefully', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await callTool(server, 'login', {
+        email: 'alice@example.com',
+        password: 'pass',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('Error logging in');
+      expect(text).toContain('Network error');
+    });
+  });
+
+  describe('create_account', () => {
+    it('includes password in success response', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce(mockResponse({
+        accessToken: 'new-token',
+        user: { id: 'u2', username: 'bob', email: 'bob@example.com' },
+      }));
+
+      const result = await callTool(server, 'create_account', {
+        email: 'bob@example.com',
+        username: 'bob',
+        password: 'G3n3r4t3dP@ss!',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('Account created successfully');
+      expect(text).toContain('G3n3r4t3dP@ss!');
+      expect(text).toContain('Tell the user their password');
+    });
+
+    it('suggests login when email already exists', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        statusText: 'Conflict',
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('Email already registered'),
+      });
+
+      const result = await callTool(server, 'create_account', {
+        email: 'existing@example.com',
+        username: 'newuser',
+        password: 'somePass123',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('already registered');
+      expect(text).toContain('login');
+    });
+
+    it('suggests login on 409 status even without "already" in body', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        statusText: 'Conflict',
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('Conflict: duplicate entry'),
+      });
+
+      const result = await callTool(server, 'create_account', {
+        email: 'dup@example.com',
+        username: 'dupuser',
+        password: 'somePass123',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('login');
+    });
+
+    it('returns generic error for non-409 failures', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve('Internal server error'),
+      });
+
+      const result = await callTool(server, 'create_account', {
+        email: 'bob@example.com',
+        username: 'bob',
+        password: 'somePass123',
+      });
+
+      const text = result.content[0].text;
+      expect(text).toContain('Account creation failed');
+      expect(text).not.toContain('login');
+    });
+  });
+
+  describe('tool descriptions mention auth', () => {
+    it('install_skill description mentions authentication', () => {
+      const tools = (server as any)._registeredTools;
+      const desc = tools['install_skill']?.description || '';
+      expect(desc).toContain('Requires authentication');
+    });
+
+    it('upload_skill description mentions create_account', () => {
+      const tools = (server as any)._registeredTools;
+      const desc = tools['upload_skill']?.description || '';
+      expect(desc).toContain('create_account');
+    });
+  });
+
+  describe('onboarding mentions login', () => {
+    it('get_started quick reference table includes login', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce(mockResponse({ data: [], meta: { total: 0 } }));
+      mockFetch.mockResolvedValueOnce(mockResponse({ balance: 30 }));
+
+      const result = await callTool(server, 'get_started');
+
+      const text = result.content[0].text;
+      expect(text).toContain('login');
+      expect(text).toContain('Log in');
+    });
+
+    it('get_started tool list includes login alongside create_account', async () => {
+      await new Promise(r => setTimeout(r, 10));
+      mockFetch.mockReset();
+      mockFetch.mockResolvedValueOnce(mockResponse({ data: [], meta: { total: 0 } }));
+      mockFetch.mockResolvedValueOnce(mockResponse({ balance: 30 }));
+
+      const result = await callTool(server, 'get_started');
+
+      const text = result.content[0].text;
+      expect(text).toContain('create_account');
+      expect(text).toContain('login');
+    });
+  });
+
   describe('skillbrick-onboarding prompt', () => {
     it('returns prompt with onboarding content', async () => {
       const result = await callPrompt(server, 'skillbrick-onboarding');
@@ -402,6 +597,14 @@ describe('MCP Server', () => {
       expect(text).toContain('PUBLIC');
       expect(text).toContain('PRIVATE');
       expect(text).toContain('Credit System');
+    });
+
+    it('mentions login tool', async () => {
+      const result = await callPrompt(server, 'skillbrick-onboarding');
+
+      const text = result.messages[0].content.text;
+      expect(text).toContain('login');
+      expect(text).toContain('create_account');
     });
   });
 });
