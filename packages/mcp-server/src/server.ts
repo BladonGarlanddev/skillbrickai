@@ -324,9 +324,12 @@ async function ensureToken(): Promise<boolean> {
 }
 
 const NO_TOKEN_MSG =
-  "Not authenticated. The server could not auto-provision an account. " +
-  "Please call the create_account tool with an email, username, and password " +
-  "to create an account and authenticate automatically.";
+  "ACTION REQUIRED: You are not authenticated. " +
+  "Call the create_account tool now — ask the user for their email and username, " +
+  "then generate a strong random password yourself (do NOT ask the user for a password). " +
+  "This will authenticate you automatically and grant 30 starter credits. " +
+  "If the account already exists, use the login tool instead. " +
+  "Do not ask the user to configure an API key — just call create_account or login.";
 
 // ---------------------------------------------------------------------------
 // Intelligent search helpers
@@ -590,7 +593,7 @@ export function createSkillBrickServer(): McpServer {
         ].join("\n"));
 
         // ── Section 2: Account & Credit Status ──
-        let creditInfo = "Not authenticated — tools will work in read-only mode.";
+        let creditInfo: string;
         if (API_TOKEN) {
           try {
             const balance = await apiFetch("/tokens/balance") as { balance: number };
@@ -598,6 +601,22 @@ export function createSkillBrickServer(): McpServer {
           } catch {
             creditInfo = "Authenticated (balance check failed)";
           }
+        } else {
+          creditInfo = [
+            `⚠️ **Not authenticated.** You are not logged in, so tools that require authentication`,
+            `(installing skills, uploading, checking credits) will not work yet.`,
+            ``,
+            `**To fix this, call the \`create_account\` tool now.** Ask the user for their email and`,
+            `username, then **generate a strong random password yourself** (16+ chars, mixed case, numbers,`,
+            `symbols). Do NOT ask the user to come up with a password. Tell them the generated password`,
+            `after the account is created so they can log in on the website later.`,
+            ``,
+            `This creates a free account, logs you in automatically, and grants 30 starter credits.`,
+            `You do not need an API key or any manual configuration — just call the tool.`,
+            ``,
+            `If the account already exists (email or username taken), use the **\`login\`** tool instead`,
+            `with the user's email and password.`,
+          ].join("\n");
         }
 
         sections.push([
@@ -655,7 +674,8 @@ export function createSkillBrickServer(): McpServer {
             `- **upload_research** — Share research findings. Earns 5 credits if public.`,
             `- **my_skills** / **my_research** — List your uploaded content.`,
             `- **check_credits** — Check credit balance.`,
-            `- **create_account** — Register a full account.`,
+            `- **create_account** — Register a full account (generate a random password, don't ask the user).`,
+            `- **login** — Log in to an existing account.`,
           ].join("\n"));
         }
 
@@ -973,6 +993,7 @@ export function createSkillBrickServer(): McpServer {
           `| Browse collections | list_collections, get_collection | Free | — |`,
           `| Setup project CLAUDE.md | setup_environment | Free | — |`,
           `| Register account | create_account | Free | 30 credits |`,
+          `| Log in (existing account) | login | Free | — |`,
           ``,
           `---`,
           ``,
@@ -1033,7 +1054,8 @@ export function createSkillBrickServer(): McpServer {
               "- **check_credits** — Check credit balance",
               "- **list_domains** — Browse skill categories",
               "- **list_collections** / **get_collection** — Browse curated bundles",
-              "- **create_account** — Register a full account",
+              "- **create_account** — Register a full account (generate a random password, don't ask the user)",
+              "- **login** — Log in to an existing account",
               "",
               "## Credit System",
               "- New accounts start with 30 free credits",
@@ -1787,14 +1809,51 @@ export function createSkillBrickServer(): McpServer {
     }
   );
 
+  // ── login ──
+  server.tool(
+    "login",
+    "Log in to an existing SkillBrick AI account. Use this when the user already has an account (e.g., create_account returned 'already registered'). Authenticates and stores the token for all subsequent tool calls.",
+    {
+      email: z.string().email().describe("The user's email address"),
+      password: z.string().min(8).describe("The user's password"),
+    },
+    async ({ email, password }) => {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          return textResult(`Login failed: ${body || res.statusText}. Check the email and password.`);
+        }
+
+        const data = await res.json();
+        API_TOKEN = data.accessToken;
+        persistToken(data.accessToken, data.user.id, data.user.username);
+
+        return textResult(
+          `Logged in successfully!\n\n` +
+          `**Username:** ${data.user.username}\n` +
+          `**Email:** ${data.user.email}\n\n` +
+          `All MCP tools are now using this account.`
+        );
+      } catch (err) {
+        return textResult(`Error logging in: ${(err as Error).message}`);
+      }
+    }
+  );
+
   // ── create_account ──
   server.tool(
     "create_account",
-    "Register a new SkillBrick AI account for the user. This creates a full account with a real email and username, replacing any auto-provisioned guest account. The user can then log in on the website with these credentials. Ask the user for their preferred email and username before calling this.",
+    "Register a new SkillBrick AI account. Generate a strong random password yourself (e.g., 16+ chars, mixed case, numbers, symbols) — do NOT ask the user for a password. Ask the user for their preferred email and username, then generate the password and call this tool. Tell the user the generated password so they can log in on the website later. If the account already exists, use the login tool instead.",
     {
       email: z.string().email().describe("The user's email address"),
       username: z.string().min(3).describe("Desired username (min 3 characters)"),
-      password: z.string().min(8).describe("Password (min 8 characters)"),
+      password: z.string().min(8).describe("Password (min 8 characters) — generate a strong random one, do not ask the user"),
     },
     async ({ email, username, password }) => {
       try {
@@ -1806,10 +1865,15 @@ export function createSkillBrickServer(): McpServer {
 
         if (!res.ok) {
           const body = await res.text().catch(() => "");
-          if (body.includes("already")) {
-            return textResult(`Account creation failed: ${body.includes("Email") ? "That email is already registered." : "That username is already taken."} Please try a different one.`);
+          if (body.includes("already") || body.includes("Already") || body.includes("conflict") || res.status === 409) {
+            const reason = body.includes("Email") || body.includes("email") ? "That email is already registered." : "That username is already taken.";
+            return textResult(
+              `Account creation failed: ${reason}\n\n` +
+              `This account likely already exists. Use the **login** tool instead with the email and password. ` +
+              `If the user doesn't remember their password, they can reset it at https://skillbrickai.com.`
+            );
           }
-          return textResult(`Account creation failed: ${body}`);
+          return textResult(`Account creation failed: ${body || res.statusText}`);
         }
 
         const data = await res.json();
@@ -1822,8 +1886,9 @@ export function createSkillBrickServer(): McpServer {
           `Account created successfully!\n\n` +
           `**Username:** ${data.user.username}\n` +
           `**Email:** ${data.user.email}\n` +
+          `**Password:** ${password}\n` +
           `**Credits:** 30 (welcome bonus)\n\n` +
-          `The user can now log in at https://skillbrickai.com with these credentials. ` +
+          `⚠️ **Tell the user their password** so they can log in at https://skillbrickai.com later.\n` +
           `All MCP tools are now using this account.`
         );
       } catch (err) {
