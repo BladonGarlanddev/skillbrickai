@@ -7,6 +7,8 @@ on:
       - 'apps/api/**'
       - 'packages/shared/**'
       - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -18,9 +20,17 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
+            set -eo pipefail
             cd ~/collective
-            git pull origin main
+            # Force working tree to match origin/main exactly. This survives
+            # any local drift (stray untracked files from older clones, etc.)
+            # that would otherwise block `git pull`. .env and anything in
+            # .gitignore is preserved because `git clean` respects gitignore.
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
             pnpm install --frozen-lockfile
             cd apps/api
             npx prisma generate --schema=src/prisma/schema.prisma
