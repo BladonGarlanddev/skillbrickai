@@ -10,7 +10,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TokensService } from '../tokens/tokens.service';
 import { BadgesService } from '../badges/badges.service';
 import { UpvotesService } from '../upvotes/upvotes.service';
-import { BillingService } from '../billing/billing.service';
 
 function generateSlug(name: string): string {
   return name
@@ -89,7 +88,6 @@ export class SkillsService {
     private readonly tokensService: TokensService,
     private readonly badgesService: BadgesService,
     private readonly upvotesService: UpvotesService,
-    private readonly billingService: BillingService,
   ) {}
 
   async findAll(query: {
@@ -501,49 +499,43 @@ export class SkillsService {
       throw new NotFoundException('Skill not found');
     }
 
-    // Unlimited subscribers skip credit checks
-    const isUnlimited =
-      await this.billingService.hasActiveUnlimitedSubscription(userId);
+    // Check user has enough tokens
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { tokenBalance: true },
+    });
 
-    if (!isUnlimited) {
-      // Check user has enough tokens
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { tokenBalance: true },
+    if (!user || user.tokenBalance < 1) {
+      throw new BadRequestException({
+        error: 'INSUFFICIENT_CREDITS',
+        message: 'You have run out of download credits.',
+        currentBalance: user?.tokenBalance ?? 0,
+        requiredCredits: 1,
+        options: [
+          {
+            method: 'submit_skill',
+            description:
+              'Submit a skill to the SkillBrick AI platform to earn 10 download credits. Use the upload_skill MCP tool or visit the website to submit.',
+            creditsAwarded: 10,
+          },
+          {
+            method: 'subscription',
+            description:
+              'Subscribe to a SkillBrick AI plan for monthly download credits. Visit the pricing page for details.',
+            creditsAwarded: 'unlimited',
+            actionUrl: '/pricing',
+          },
+        ],
       });
-
-      if (!user || user.tokenBalance < 1) {
-        throw new BadRequestException({
-          error: 'INSUFFICIENT_CREDITS',
-          message: 'You have run out of download credits.',
-          currentBalance: user?.tokenBalance ?? 0,
-          requiredCredits: 1,
-          options: [
-            {
-              method: 'submit_skill',
-              description:
-                'Submit a skill to the SkillBrick AI platform to earn 10 download credits. Use the upload_skill MCP tool or visit the website to submit.',
-              creditsAwarded: 10,
-            },
-            {
-              method: 'subscription',
-              description:
-                'Subscribe to a SkillBrick AI plan for monthly download credits. Visit the pricing page for details.',
-              creditsAwarded: 'unlimited',
-              actionUrl: '/pricing',
-            },
-          ],
-        });
-      }
-
-      // Debit 1 token
-      await this.tokensService.debitTokens(
-        userId,
-        1,
-        'SKILL_INSTALLED',
-        skillId,
-      );
     }
+
+    // Debit 1 token
+    await this.tokensService.debitTokens(
+      userId,
+      1,
+      'SKILL_INSTALLED',
+      skillId,
+    );
 
     // Increment install count
     await this.prisma.skill.update({

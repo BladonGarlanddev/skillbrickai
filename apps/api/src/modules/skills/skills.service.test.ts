@@ -41,18 +41,13 @@ function createMockUpvotesService() {
   return { toggleUpvote: vi.fn() };
 }
 
-function createMockBillingService() {
-  return { hasActiveUnlimitedSubscription: vi.fn().mockResolvedValue(false) };
-}
-
 function createService() {
   const prisma = createMockPrisma();
   const tokens = createMockTokensService();
   const badges = createMockBadgesService();
   const upvotes = createMockUpvotesService();
-  const billing = createMockBillingService();
-  const service = new SkillsService(prisma as any, tokens as any, badges as any, upvotes as any, billing as any);
-  return { service, prisma, tokens, badges, billing };
+  const service = new SkillsService(prisma as any, tokens as any, badges as any, upvotes as any);
+  return { service, prisma, tokens, badges };
 }
 
 // ── Tests ──
@@ -72,12 +67,10 @@ describe('SkillsService', () => {
 
     it('routes search queries through the full-text-search raw query', async () => {
       const { service, prisma } = createService();
-      // No search results — still exercises the raw-query code path.
       prisma.$queryRaw.mockResolvedValue([]);
 
       const result = await service.findAll({ search: 'python', domain: 'coding' });
 
-      // Search path uses $queryRaw, NOT prisma.skill.findMany with a where clause.
       expect(prisma.$queryRaw).toHaveBeenCalled();
       expect(prisma.skill.findMany).not.toHaveBeenCalled();
       expect(result.data).toEqual([]);
