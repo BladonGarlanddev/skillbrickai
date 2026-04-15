@@ -20,7 +20,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
           script: |
             set -eo pipefail
             cd ~/collective
@@ -34,6 +33,14 @@ jobs:
             pnpm install --frozen-lockfile
             cd apps/api
             npx prisma generate --schema=src/prisma/schema.prisma
+            # Baseline: prod's schema predates its _prisma_migrations table
+            # (original provisioning was via `prisma db push`), so mark the
+            # historical migrations as already applied. `|| true` makes each
+            # call idempotent — the first deploy records them, subsequent
+            # deploys no-op with "already resolved" errors we ignore.
+            npx prisma migrate resolve --applied 20260329065940_init --schema=src/prisma/schema.prisma || true
+            npx prisma migrate resolve --applied 20260402050000_add_skill_attribution --schema=src/prisma/schema.prisma || true
+            npx prisma migrate resolve --applied 20260415045755_add_donations --schema=src/prisma/schema.prisma || true
             npx prisma migrate deploy --schema=src/prisma/schema.prisma
             pnpm build
             pm2 restart skillbrick-api
