@@ -8,10 +8,84 @@ on:
       - 'packages/shared/**'
       - 'pnpm-lock.yaml'
       - '.github/workflows/deploy-api.yml'
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-api.yml'
   workflow_dispatch:
 
 jobs:
+  validate:
+    name: Test, build, drift check
+    runs-on: ubuntu-latest
+    services:
+      # Empty Postgres used by `prisma migrate diff` as a shadow DB to replay
+      # migrations against, so we can compare schema.prisma vs the migrations
+      # folder. No app data ever lives here.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        working-directory: apps/api
+        run: npx prisma generate --schema=src/prisma/schema.prisma
+
+      # Reports any divergence between schema.prisma and what the migration
+      # chain would create. NON-BLOCKING for now because the chain has
+      # pre-existing holes (Research, ClaudeMd, Service have no migrations
+      # — they were originally added via prisma db push). Once those are
+      # backfilled, flip continue-on-error to false so drift becomes a hard
+      # gate. The smoke test below catches drift at runtime in the meantime.
+      - name: Detect schema/migration drift (warning only)
+        id: drift_check
+        continue-on-error: true
+        working-directory: apps/api
+        run: |
+          npx prisma migrate diff \
+            --from-migrations src/prisma/migrations \
+            --to-schema-datamodel src/prisma/schema.prisma \
+            --shadow-database-url postgresql://postgres:postgres@localhost:5432/shadow \
+            --exit-code
+      - name: Drift check result
+        if: steps.drift_check.outcome == 'failure'
+        run: echo "::warning::Schema/migration drift detected. Run prisma migrate diff locally to see what's missing. This is non-blocking until the migration chain is backfilled."
+
+      - name: Run tests
+        working-directory: apps/api
+        run: pnpm test
+
+      - name: Build
+        working-directory: apps/api
+        run: pnpm build
+
   deploy:
+    name: Deploy to EC2
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to EC2
@@ -45,3 +119,18 @@ jobs:
             pnpm build
             pm2 restart skillbrick-api
             pm2 save
+            # Smoke test: hit a real endpoint that touches the User table via
+            # joins. If the Prisma client and DB are out of sync, this 500s
+            # and we fail the deploy loudly instead of leaving a broken API
+            # running. Sleep gives Nest a moment to finish booting.
+            sleep 4
+            status=$(curl -s -o /tmp/smoke -w "%{http_code}" "http://localhost:3456/skills?limit=1" || echo "000")
+            if [ "$status" != "200" ]; then
+              echo "❌ Smoke test failed: HTTP $status"
+              echo "── response body ──"
+              cat /tmp/smoke || true
+              echo "── recent pm2 logs ──"
+              pm2 logs skillbrick-api --lines 30 --nostream || true
+              exit 1
+            fi
+            echo "✅ Smoke test passed (HTTP 200 from /skills?limit=1)"
