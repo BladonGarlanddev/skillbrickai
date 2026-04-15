@@ -36,10 +36,7 @@ model User {
   requests        SkillRequest[]
   showcases       Showcase[]
   suggestions     ImprovementSuggestion[]
-  serviceOrders          ServiceOrder[]
-  lemonSqueezyCustomerId String?        @unique
-  subscriptions          Subscription[]
-  donations              Donation[]
+  serviceOrders   ServiceOrder[]
 }
 
 model Skill {
@@ -200,7 +197,6 @@ enum BadgeType {
   HELPER
   VERIFIED_EXPERT
   RESEARCHER
-  PATRON
 }
 
 model TokenTransaction {
@@ -220,7 +216,6 @@ enum TokenTransactionType {
   SKILL_INSTALLED
   ADMIN_GRANT
   RESEARCH_POSTED
-  SUBSCRIPTION_CREDIT
 }
 
 enum Visibility {
@@ -462,52 +457,4 @@ enum ServiceOrderStatus {
   DELIVERED
   CANCELLED
   REFUNDED
-}
-
-model Subscription {
-  id                         String             @id @default(cuid())
-  userId                     String
-  lemonSqueezySubscriptionId String             @unique
-  lemonSqueezyCustomerId     String
-  lemonSqueezyOrderId        String
-  variantId                  String
-  planName                   String
-  status                     SubscriptionStatus @default(ACTIVE)
-  currentPeriodEnd           DateTime
-  createdAt                  DateTime           @default(now())
-  updatedAt                  DateTime           @updatedAt
-
-  user                       User               @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  PAUSED
-  CANCELLED
-  EXPIRED
-  PAST_DUE
-}
-
-model Donation {
-  id                    String         @id @default(cuid())
-  userId                String
-  stripeSessionId       String         @unique
-  stripePaymentIntentId String?        @unique
-  amount                Int            // cents
-  currency              String         @default("usd")
-  status                DonationStatus @default(PENDING)
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-
-  user                  User           @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-enum DonationStatus {
-  PENDING
-  COMPLETED
-  FAILED
 }
