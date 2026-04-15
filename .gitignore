@@ -6,9 +6,6 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Prisma
-apps/api/src/prisma/migrations/
-
 # Vite
 apps/web/dist/
 

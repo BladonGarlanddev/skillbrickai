@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TokensService } from '../tokens/tokens.service';
 import { BadgesService } from '../badges/badges.service';
@@ -43,29 +44,109 @@ export class ResearchService {
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      visibility: 'PUBLIC',
-    };
+    const searchTerm = query.search?.trim();
 
-    if (query.search) {
-      where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
+    // ── Search path: use Postgres full-text search + trigram fuzzy matching ──
+    // Scoring blends ts_rank_cd (weighted FTS over name/tags/description/domain/
+    // keyFindings/methodology/content) with trigram similarity on name/description.
+    // Rows match if EITHER the tsvector matches OR trigram similarity is high
+    // enough, so typos and partial words still surface the right item.
+    if (searchTerm) {
+      const filterClauses: Prisma.Sql[] = [
+        Prisma.sql`r.visibility = 'PUBLIC'`,
       ];
+      if (query.domain) {
+        filterClauses.push(Prisma.sql`r.domain = ${query.domain}`);
+      }
+      if (query.tag) {
+        filterClauses.push(
+          Prisma.sql`EXISTS (SELECT 1 FROM "ResearchTag" rt WHERE rt."researchId" = r.id AND rt.tag = ${query.tag})`,
+        );
+      }
+      const whereSql = Prisma.join(filterClauses, ' AND ');
+
+      const ranked = await this.prisma.$queryRaw<
+        Array<{ id: string; total: bigint }>
+      >`
+        WITH scored AS (
+          SELECT
+            r.id,
+            (
+              COALESCE(
+                ts_rank_cd(
+                  r."searchVector",
+                  websearch_to_tsquery('english', ${searchTerm})
+                ),
+                0
+              ) * 4
+              + GREATEST(
+                  similarity(r.name, ${searchTerm}),
+                  similarity(r.description, ${searchTerm}) * 0.6
+                )
+              + LEAST(r."referenceCount", 100) / 100.0 * 0.3
+            ) AS score,
+            COUNT(*) OVER() AS total
+          FROM "Research" r
+          WHERE ${whereSql}
+            AND (
+              r."searchVector" @@ websearch_to_tsquery('english', ${searchTerm})
+              OR r.name % ${searchTerm}
+              OR r.description % ${searchTerm}
+            )
+        )
+        SELECT id, total
+        FROM scored
+        ORDER BY score DESC, id ASC
+        LIMIT ${limit}
+        OFFSET ${skip}
+      `;
+
+      const total = ranked.length > 0 ? Number(ranked[0].total) : 0;
+      const ids = ranked.map((r) => r.id);
+
+      if (ids.length === 0) {
+        return {
+          data: [],
+          meta: { total: 0, page, limit, totalPages: 0 },
+        };
+      }
+
+      const records = await this.prisma.research.findMany({
+        where: { id: { in: ids } },
+        include: {
+          author: { select: { id: true, username: true, avatarUrl: true } },
+          claimedBy: { select: { id: true, username: true } },
+          tags: true,
+          sources: true,
+        },
+      });
+      const byId = new Map(records.map((r) => [r.id, r]));
+      const ordered = ids
+        .map((id) => byId.get(id))
+        .filter((r): r is NonNullable<typeof r> => !!r);
+
+      const withUpvotes = await Promise.all(
+        ordered.map(async (r) => {
+          const upvoteCount = await this.prisma.upvote.count({
+            where: { targetId: r.id, targetType: 'RESEARCH' },
+          });
+          return { ...r, _count: { upvotes: upvoteCount } };
+        }),
+      );
+
+      return {
+        data: withUpvotes,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      };
     }
 
-    if (query.domain) {
-      where.domain = query.domain;
-    }
+    // ── Browse path: no search term, use standard Prisma ordering ──
+    const where: Prisma.ResearchWhereInput = { visibility: 'PUBLIC' };
+    if (query.domain) where.domain = query.domain;
+    if (query.tag) where.tags = { some: { tag: query.tag } };
 
-    if (query.tag) {
-      where.tags = { some: { tag: query.tag } };
-    }
-
-    let orderBy: any = { createdAt: 'desc' };
-    if (query.sortBy === 'popular') {
-      orderBy = { referenceCount: 'desc' };
-    } else if (query.sortBy === 'references') {
+    let orderBy: Prisma.ResearchOrderByWithRelationInput = { createdAt: 'desc' };
+    if (query.sortBy === 'popular' || query.sortBy === 'references') {
       orderBy = { referenceCount: 'desc' };
     }
 
@@ -87,7 +168,6 @@ export class ResearchService {
       this.prisma.research.count({ where }),
     ]);
 
-    // Count upvotes manually since we don't have a direct relation
     const researchWithUpvotes = await Promise.all(
       research.map(async (r) => {
         const upvoteCount = await this.prisma.upvote.count({

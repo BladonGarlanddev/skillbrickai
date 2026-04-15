@@ -5,10 +5,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TokensService } from '../tokens/tokens.service';
 import { BadgesService } from '../badges/badges.service';
 import { UpvotesService } from '../upvotes/upvotes.service';
+import { BillingService } from '../billing/billing.service';
 
 function generateSlug(name: string): string {
   return name
@@ -87,6 +89,7 @@ export class SkillsService {
     private readonly tokensService: TokensService,
     private readonly badgesService: BadgesService,
     private readonly upvotesService: UpvotesService,
+    private readonly billingService: BillingService,
   ) {}
 
   async findAll(query: {
@@ -101,26 +104,99 @@ export class SkillsService {
     const limit = Math.min(query.limit || 20, 100);
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      visibility: 'PUBLIC',
-    };
+    const searchTerm = query.search?.trim();
 
-    if (query.search) {
-      where.OR = [
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
+    // ── Search path: Postgres full-text + trigram fuzzy ──
+    // Blends ts_rank_cd (weighted FTS over name/tags/description/domain/content)
+    // with trigram similarity on name/description, and a small install-count
+    // boost so popular skills break ties in favor of adopted ones.
+    if (searchTerm) {
+      const filterClauses: Prisma.Sql[] = [
+        Prisma.sql`s.visibility = 'PUBLIC'`,
       ];
+      if (query.domain) {
+        filterClauses.push(Prisma.sql`s.domain = ${query.domain}`);
+      }
+      if (query.tag) {
+        filterClauses.push(
+          Prisma.sql`EXISTS (SELECT 1 FROM "SkillTag" st WHERE st."skillId" = s.id AND st.tag = ${query.tag})`,
+        );
+      }
+      const whereSql = Prisma.join(filterClauses, ' AND ');
+
+      const ranked = await this.prisma.$queryRaw<
+        Array<{ id: string; total: bigint }>
+      >`
+        WITH scored AS (
+          SELECT
+            s.id,
+            (
+              COALESCE(
+                ts_rank_cd(
+                  s."searchVector",
+                  websearch_to_tsquery('english', ${searchTerm})
+                ),
+                0
+              ) * 4
+              + GREATEST(
+                  similarity(s.name, ${searchTerm}),
+                  similarity(s.description, ${searchTerm}) * 0.6
+                )
+              + LEAST(s."installCount", 100) / 100.0 * 0.3
+            ) AS score,
+            COUNT(*) OVER() AS total
+          FROM "Skill" s
+          WHERE ${whereSql}
+            AND (
+              s."searchVector" @@ websearch_to_tsquery('english', ${searchTerm})
+              OR s.name % ${searchTerm}
+              OR s.description % ${searchTerm}
+            )
+        )
+        SELECT id, total
+        FROM scored
+        ORDER BY score DESC, id ASC
+        LIMIT ${limit}
+        OFFSET ${skip}
+      `;
+
+      const total = ranked.length > 0 ? Number(ranked[0].total) : 0;
+      const ids = ranked.map((r) => r.id);
+
+      if (ids.length === 0) {
+        return {
+          data: [],
+          meta: { total: 0, page, limit, totalPages: 0 },
+        };
+      }
+
+      const records = await this.prisma.skill.findMany({
+        where: { id: { in: ids } },
+        include: {
+          author: { select: { id: true, username: true, avatarUrl: true } },
+          claimedBy: { select: { id: true, username: true } },
+          tags: true,
+          testedOn: true,
+          _count: { select: { upvotes: true } },
+        },
+      });
+      const byId = new Map(records.map((s) => [s.id, s]));
+      const ordered = ids
+        .map((id) => byId.get(id))
+        .filter((s): s is NonNullable<typeof s> => !!s);
+
+      return {
+        data: ordered,
+        meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      };
     }
 
-    if (query.domain) {
-      where.domain = query.domain;
-    }
+    // ── Browse path: no search term, use standard Prisma ordering ──
+    const where: Prisma.SkillWhereInput = { visibility: 'PUBLIC' };
+    if (query.domain) where.domain = query.domain;
+    if (query.tag) where.tags = { some: { tag: query.tag } };
 
-    if (query.tag) {
-      where.tags = { some: { tag: query.tag } };
-    }
-
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Prisma.SkillOrderByWithRelationInput = { createdAt: 'desc' };
     if (query.sortBy === 'popular') {
       orderBy = { upvotes: { _count: 'desc' } };
     } else if (query.sortBy === 'installs') {
@@ -425,43 +501,49 @@ export class SkillsService {
       throw new NotFoundException('Skill not found');
     }
 
-    // Check user has enough tokens
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { tokenBalance: true },
-    });
+    // Unlimited subscribers skip credit checks
+    const isUnlimited =
+      await this.billingService.hasActiveUnlimitedSubscription(userId);
 
-    if (!user || user.tokenBalance < 1) {
-      throw new BadRequestException({
-        error: 'INSUFFICIENT_CREDITS',
-        message: 'You have run out of download credits.',
-        currentBalance: user?.tokenBalance ?? 0,
-        requiredCredits: 1,
-        options: [
-          {
-            method: 'submit_skill',
-            description:
-              'Submit a skill to the SkillBrick AI platform to earn 10 download credits. Use the upload_skill MCP tool or visit the website to submit.',
-            creditsAwarded: 10,
-          },
-          {
-            method: 'subscription',
-            description:
-              'Subscribe to a SkillBrick AI plan for monthly download credits. Visit the pricing page for details.',
-            creditsAwarded: 'unlimited',
-            actionUrl: '/pricing',
-          },
-        ],
+    if (!isUnlimited) {
+      // Check user has enough tokens
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { tokenBalance: true },
       });
-    }
 
-    // Debit 1 token
-    await this.tokensService.debitTokens(
-      userId,
-      1,
-      'SKILL_INSTALLED',
-      skillId,
-    );
+      if (!user || user.tokenBalance < 1) {
+        throw new BadRequestException({
+          error: 'INSUFFICIENT_CREDITS',
+          message: 'You have run out of download credits.',
+          currentBalance: user?.tokenBalance ?? 0,
+          requiredCredits: 1,
+          options: [
+            {
+              method: 'submit_skill',
+              description:
+                'Submit a skill to the SkillBrick AI platform to earn 10 download credits. Use the upload_skill MCP tool or visit the website to submit.',
+              creditsAwarded: 10,
+            },
+            {
+              method: 'subscription',
+              description:
+                'Subscribe to a SkillBrick AI plan for monthly download credits. Visit the pricing page for details.',
+              creditsAwarded: 'unlimited',
+              actionUrl: '/pricing',
+            },
+          ],
+        });
+      }
+
+      // Debit 1 token
+      await this.tokensService.debitTokens(
+        userId,
+        1,
+        'SKILL_INSTALLED',
+        skillId,
+      );
+    }
 
     // Increment install count
     await this.prisma.skill.update({

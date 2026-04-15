@@ -19,6 +19,7 @@ function createMockPrisma() {
     researchVersion: { create: vi.fn() },
     upvote: { count: vi.fn().mockResolvedValue(0), deleteMany: vi.fn() },
     collectionResearch: { deleteMany: vi.fn() },
+    $queryRaw: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -58,16 +59,30 @@ describe('ResearchService', () => {
       expect(whereArg.visibility).toBe('PUBLIC');
     });
 
-    it('includes visibility filter alongside search and domain', async () => {
+    it('routes search queries through the full-text-search raw query', async () => {
+      const { service, prisma } = createService();
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      const result = await service.findAll({ search: 'llm', domain: 'AI Engineering' });
+
+      // Search path uses $queryRaw, not research.findMany with a where clause.
+      expect(prisma.$queryRaw).toHaveBeenCalled();
+      expect(prisma.research.findMany).not.toHaveBeenCalled();
+      expect(result.data).toEqual([]);
+      expect(result.meta.total).toBe(0);
+    });
+
+    it('uses standard Prisma findMany when no search term is given', async () => {
       const { service, prisma } = createService();
       prisma.research.findMany.mockResolvedValue([]);
       prisma.research.count.mockResolvedValue(0);
 
-      await service.findAll({ search: 'llm', domain: 'AI Engineering' });
+      await service.findAll({ domain: 'AI Engineering' });
 
       const whereArg = prisma.research.findMany.mock.calls[0][0].where;
       expect(whereArg.visibility).toBe('PUBLIC');
       expect(whereArg.domain).toBe('AI Engineering');
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
     });
   });
 

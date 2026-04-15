@@ -22,6 +22,7 @@ function createMockPrisma() {
     showcaseSkill: { deleteMany: vi.fn() },
     improvementSuggestion: { deleteMany: vi.fn() },
     user: { update: vi.fn() },
+    $queryRaw: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -40,13 +41,18 @@ function createMockUpvotesService() {
   return { toggleUpvote: vi.fn() };
 }
 
+function createMockBillingService() {
+  return { hasActiveUnlimitedSubscription: vi.fn().mockResolvedValue(false) };
+}
+
 function createService() {
   const prisma = createMockPrisma();
   const tokens = createMockTokensService();
   const badges = createMockBadgesService();
   const upvotes = createMockUpvotesService();
-  const service = new SkillsService(prisma as any, tokens as any, badges as any, upvotes as any);
-  return { service, prisma, tokens, badges };
+  const billing = createMockBillingService();
+  const service = new SkillsService(prisma as any, tokens as any, badges as any, upvotes as any, billing as any);
+  return { service, prisma, tokens, badges, billing };
 }
 
 // ── Tests ──
@@ -64,17 +70,31 @@ describe('SkillsService', () => {
       expect(whereArg.visibility).toBe('PUBLIC');
     });
 
-    it('includes visibility filter alongside search terms', async () => {
+    it('routes search queries through the full-text-search raw query', async () => {
+      const { service, prisma } = createService();
+      // No search results — still exercises the raw-query code path.
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      const result = await service.findAll({ search: 'python', domain: 'coding' });
+
+      // Search path uses $queryRaw, NOT prisma.skill.findMany with a where clause.
+      expect(prisma.$queryRaw).toHaveBeenCalled();
+      expect(prisma.skill.findMany).not.toHaveBeenCalled();
+      expect(result.data).toEqual([]);
+      expect(result.meta.total).toBe(0);
+    });
+
+    it('uses standard Prisma findMany when no search term is given', async () => {
       const { service, prisma } = createService();
       prisma.skill.findMany.mockResolvedValue([]);
       prisma.skill.count.mockResolvedValue(0);
 
-      await service.findAll({ search: 'python', domain: 'coding' });
+      await service.findAll({ domain: 'coding' });
 
       const whereArg = prisma.skill.findMany.mock.calls[0][0].where;
       expect(whereArg.visibility).toBe('PUBLIC');
       expect(whereArg.domain).toBe('coding');
-      expect(whereArg.OR).toBeDefined();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
     });
   });
 
