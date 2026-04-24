@@ -16,6 +16,8 @@ import DocsPage from '@/pages/DocsPage/DocsPage';
 import GuidePage from '@/pages/GuidePage/GuidePage';
 import ServicesPage from '@/pages/ServicesPage/ServicesPage';
 import TermsPage from '@/pages/TermsPage/TermsPage';
+import PricingPage from '@/pages/PricingPage/PricingPage';
+import DonatePage from '@/pages/DonatePage/DonatePage';
 
 function RootLayout() {
   return (
@@ -47,6 +49,8 @@ export function AppRoutes() {
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/guide" element={<GuidePage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/donate" element={<DonatePage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/research/:researchId" element={<ResearchDetailPage />} />
         <Route path="/collection/:collectionId" element={<CollectionDetailPage />} />

@@ -1,0 +1,259 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  @include container-narrow;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  color: rgba($foreground, 0.6);
+  line-height: 1.625;
+  font-size: 1.0625rem;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+// Free tier notice
+.freeTier {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: $muted;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.7);
+}
+
+// Plan grid
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+
+  @media (max-width: $breakpoint-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plan {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: $radius;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.16);
+  }
+}
+
+.planPopular {
+  border-color: $foreground;
+  position: relative;
+
+  &:hover {
+    border-color: $foreground;
+  }
+}
+
+.popularBadge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: $foreground;
+  color: $primary-foreground;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.planName {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.priceAmount {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.priceInterval {
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.5);
+}
+
+.planDescription {
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.6);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
+.planFeature {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.7);
+}
+
+.featureCheck {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.subscribeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: $foreground;
+  color: $primary-foreground;
+  border: none;
+  border-radius: $radius;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.subscribeButtonOutline {
+  background-color: transparent;
+  color: $foreground;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+
+  &:hover {
+    background-color: $muted;
+    opacity: 1;
+  }
+}
+
+// Current subscription banner
+.currentPlan {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: $radius;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}
+
+.currentPlanInfo {
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: rgba($foreground, 0.6);
+  }
+}
+
+.manageButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: $foreground;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: $radius;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: $muted;
+  }
+}
+
+// FAQ
+.faq {
+  margin-top: 3rem;
+}
+
+.faqTitle {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.faqItem {
+  margin-bottom: 1.5rem;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: rgba($foreground, 0.6);
+  }
+}

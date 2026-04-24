@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Search, User } from 'lucide-react';
+import { Search, User, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 import { TokenPanel } from '@/components/TokenPanel/TokenPanel';
 import { useAuthStore } from '@/stores/auth.store';
@@ -54,6 +54,15 @@ export function Header() {
               size="sm"
             >
               Docs
+            </Button>
+          </Link>
+          <Link to="/donate">
+            <Button
+              variant={location.pathname === '/donate' ? 'secondary' : 'ghost'}
+              size="sm"
+            >
+              <Heart style={{ width: '0.875rem', height: '0.875rem', marginRight: '0.375rem' }} />
+              Donate
             </Button>
           </Link>
         </nav>

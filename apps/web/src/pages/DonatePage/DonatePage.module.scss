@@ -1,0 +1,258 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  @include container-narrow;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.iconCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background-color: $muted;
+  border-radius: 50%;
+  color: $foreground;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  color: rgba($foreground, 0.6);
+  line-height: 1.625;
+  font-size: 1.0625rem;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: $radius;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+
+  &[data-variant='success'] {
+    background-color: rgba(22, 163, 74, 0.08);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+    color: #15803d;
+  }
+
+  &[data-variant='info'] {
+    background-color: $muted;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: rgba($foreground, 0.7);
+  }
+}
+
+.patronCard {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: $muted;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: $radius;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.75);
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: $radius;
+  padding: 2rem;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: $breakpoint-sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.preset {
+  padding: 0.875rem 0.5rem;
+  background-color: transparent;
+  color: $foreground;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: $radius;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background-color: $muted;
+  }
+}
+
+.presetActive {
+  background-color: $foreground;
+  color: $primary-foreground;
+  border-color: $foreground;
+
+  &:hover {
+    background-color: $foreground;
+    opacity: 0.9;
+  }
+}
+
+.customRow {
+  margin-bottom: 1.5rem;
+}
+
+.customLabel {
+  display: block;
+  font-size: 0.875rem;
+  color: rgba($foreground, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.customInputWrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: $radius;
+  padding: 0 0.875rem;
+
+  &:focus-within {
+    border-color: $foreground;
+  }
+}
+
+.currency {
+  font-size: 1rem;
+  color: rgba($foreground, 0.5);
+  margin-right: 0.25rem;
+}
+
+.customInput {
+  flex: 1;
+  padding: 0.75rem 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  color: $foreground;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+.error {
+  font-size: 0.875rem;
+  color: #b91c1c;
+  background-color: rgba(185, 28, 28, 0.06);
+  border: 1px solid rgba(185, 28, 28, 0.2);
+  border-radius: $radius;
+  padding: 0.625rem 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.donateButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background-color: $foreground;
+  color: $primary-foreground;
+  border: none;
+  border-radius: $radius;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.note {
+  font-size: 0.8125rem;
+  color: rgba($foreground, 0.5);
+  line-height: 1.5;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.history {
+  max-width: 32rem;
+  margin: 2.5rem auto 0;
+}
+
+.historyTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.historyList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.625rem 0;
+  font-size: 0.9375rem;
+  color: rgba($foreground, 0.75);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.historyDate {
+  color: rgba($foreground, 0.5);
+  font-size: 0.875rem;
+}
